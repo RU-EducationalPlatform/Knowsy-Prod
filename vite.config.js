@@ -130,6 +130,7 @@ export default defineConfig({
         profile: resolve(__dirname, 'profile.html'),
         solarSystem: resolve(__dirname, 'solar-system.html'),
         periodicTable: resolve(__dirname, 'periodic-table.html'),
+        health: resolve(__dirname, 'health.html'),
       },
     },
   },

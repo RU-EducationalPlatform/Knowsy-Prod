@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Knowsy — health</title>
+<meta name="robots" content="noindex,nofollow" />
+<!-- Static sentinel for the uptime workflow's curl probe — visible
+     without executing JS. The dynamic version below (rendered by
+     src/health.js into <pre id="probe">) confirms the bundle actually
+     runs when a human opens the page. -->
+<meta name="health" content="KNOWSY_HEALTH_OK" />
+<link rel="stylesheet" href="./assets/knowsy.css" />
+</head>
+<body>
+<main class="page" data-screen-label="Health" style="padding:4rem 2rem;text-align:center">
+  <h1 style="font-family:'Instrument Serif',serif;font-size:3rem">Knowsy</h1>
+  <p style="opacity:.7">Uptime probe — this page is monitored by the
+  <code>uptime-check.yml</code> workflow.</p>
+  <pre id="probe" style="margin:2rem auto;max-width:32rem;padding:1.5rem;background:#0a0a0a;color:#9be37d;border-radius:.5rem;text-align:left">Initialising…</pre>
+</main>
+<script type="module" src="./src/health.js"></script>
+</body>
+</html>
