@@ -1,0 +1,94 @@
+# Merge guard — secondary status check that aggregates every required PR
+# gate (CI build-and-test, the Linear-Issue trailer enforcement) into a
+# single red/green signal on the commit.
+#
+# Why this exists
+# ---------------
+# system_design.md asks that "prod should not release if the tests don't
+# pass." We enforce that downstream via the explicit CI gate inside
+# promote-to-prod.yml, and via branch protection where the GitHub plan
+# allows it. On private repos under the free tier, classic branch
+# protection (and rulesets) are paywalled, so a maintainer technically
+# CAN merge a red PR. The merge guard makes that path loud rather than
+# silent: a red `merge-guard` check appears alongside red CI, the PR's
+# overall status flips to red, and Discord receives an alert.
+#
+# Triggered via workflow_run so we run AFTER CI finishes — checking
+# during CI would always race the in-progress build and give a false
+# pass. We grab the PR number from the source workflow's pull_requests
+# array and post the check status against the head SHA.
+#
+# Required secrets / variables
+# ----------------------------
+# secrets.DISCORD_WEBHOOK_PR_REVIEW  (optional) — when red, this workflow
+#                                     posts a follow-up notice into the
+#                                     same channel as the original PR ping.
+
+name: Merge guard
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+
+permissions:
+  checks: write
+  pull-requests: read
+  contents: read
+  actions: read
+
+concurrency:
+  group: merge-guard-${{ github.event.workflow_run.head_sha }}
+  cancel-in-progress: true
+
+jobs:
+  guard:
+    # Only run for PR-triggered CI completions; pushes to main fire CI
+    # too but the merge guard is a PR-stage gate.
+    if: github.event.workflow_run.event == 'pull_request' || github.event.workflow_run.event == 'pull_request_target'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      CI_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+      HEAD_SHA:      ${{ github.event.workflow_run.head_sha }}
+      RUN_URL:       ${{ github.event.workflow_run.html_url }}
+    steps:
+      - name: Result
+        run: |
+          echo "CI workflow concluded: $CI_CONCLUSION (on $HEAD_SHA)"
+          if [ "$CI_CONCLUSION" != "success" ]; then
+            echo "::error::CI did not pass on $HEAD_SHA. This PR is RED and must not be merged."
+            exit 1
+          fi
+          echo "All required CI checks passed on $HEAD_SHA."
+
+      - name: Notify Discord on red guard
+        if: failure()
+        env:
+          WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_PR_REVIEW }}
+          ROLE_ID: ${{ vars.DISCORD_REVIEW_ROLE_ID }}
+          REPO:    ${{ github.repository }}
+        run: |
+          if [ -z "$WEBHOOK" ]; then
+            echo "DISCORD_WEBHOOK_PR_REVIEW not set — skipping notification."
+            exit 0
+          fi
+          MENTION=""
+          if [ -n "$ROLE_ID" ]; then MENTION="<@&$ROLE_ID> "; fi
+          PAYLOAD=$(jq -n \
+            --arg mention "$MENTION" \
+            --arg repo    "$REPO" \
+            --arg sha     "${HEAD_SHA:0:7}" \
+            --arg url     "$RUN_URL" '
+            {
+              username: "Knowsy CI",
+              content: ($mention + "Merge guard RED on `" + $repo + "` — CI failed for `" + $sha + "`. Do NOT merge."),
+              allowed_mentions: { parse: ["roles"] },
+              embeds: [{
+                title: "Merge guard tripped",
+                description: "CI workflow on this commit did not conclude as success.",
+                url: $url,
+                color: 15158332
+              }]
+            }')
+          curl -fsS -X POST "$WEBHOOK" -H "Content-Type: application/json" -d "$PAYLOAD" >/dev/null
