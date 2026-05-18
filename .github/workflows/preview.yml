@@ -5,6 +5,10 @@ on:
     types: [opened, synchronize, reopened]
 
 permissions:
+  # contents: read is REQUIRED — when any permission is set explicitly,
+  # all unset ones default to none, which breaks actions/checkout
+  # (it 404s with "Repository not found"). Don't drop this line.
+  contents: read
   pull-requests: write
   checks: write
 

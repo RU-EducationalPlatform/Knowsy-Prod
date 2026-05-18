@@ -128,38 +128,45 @@ jobs:
           NOW="$(date -u +'%Y-%m-%d %H:%M UTC')"
           TITLE="Site down — production unreachable ($NOW)"
           RUN_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          BODY=$(cat <<EOF
-**Production probe failed.**
-
-- URL: $PROD_URL/health.html
-- HTTP status: \`$HTTP_CODE\`
-- Detected at: $NOW
-- Workflow run: $RUN_URL
-
-This ticket was opened automatically by the uptime-check workflow.
-It will auto-close when the next probe returns 200 + the
-\`KNOWSY_HEALTH_OK\` sentinel.
-
-**Triage steps**
-1. Visit $PROD_URL/health.html in a browser. Does it render?
-2. Check the most recent run of \`deploy-prod.yml\` — did a deploy fail?
-3. Roll back via \`git revert\` on \`main\` if a bad deploy is the cause.
-4. Otherwise check the Firebase Hosting status page and the Sentry
-   dashboard for a flood of runtime errors.
-EOF
-)
           LABELS_JSON='[]'
           if [ -n "$LABEL_ID" ]; then
             LABELS_JSON=$(jq -n --arg id "$LABEL_ID" '[$id]')
           fi
+          # Build the description inside jq instead of a bash heredoc — heredocs
+          # need their EOF terminator at column 0 of the shell line, which would
+          # break the YAML block scalar's indentation rule and is what made the
+          # initial workflow-validation run fail. Using jq's string concat keeps
+          # everything inside a single YAML-indented run block.
           PAYLOAD=$(jq -n \
             --arg teamId "$TEAM_ID" \
             --arg title  "$TITLE" \
-            --arg body   "$BODY" \
+            --arg url    "$PROD_URL/health.html" \
+            --arg code   "$HTTP_CODE" \
+            --arg when   "$NOW" \
+            --arg run    "$RUN_URL" \
             --argjson labelIds "$LABELS_JSON" '{
-            query: "mutation Create($input: IssueCreateInput!){ issueCreate(input:$input){ success issue { id identifier url } } }",
-            variables: { input: { teamId: $teamId, title: $title, description: $body, priority: 1, labelIds: $labelIds } }
-          }')
+              query: "mutation Create($input: IssueCreateInput!){ issueCreate(input:$input){ success issue { id identifier url } } }",
+              variables: { input: {
+                teamId: $teamId,
+                title:  $title,
+                description: (
+                  "**Production probe failed.**\n\n" +
+                  "- URL: " + $url + "\n" +
+                  "- HTTP status: `" + $code + "`\n" +
+                  "- Detected at: " + $when + "\n" +
+                  "- Workflow run: " + $run + "\n\n" +
+                  "This ticket was opened automatically by the uptime-check workflow. " +
+                  "It will auto-close when the next probe returns 200 + the `KNOWSY_HEALTH_OK` sentinel.\n\n" +
+                  "**Triage steps**\n" +
+                  "1. Visit " + $url + " in a browser. Does it render?\n" +
+                  "2. Check the most recent run of `deploy-prod.yml` — did a deploy fail?\n" +
+                  "3. Roll back via `git revert` on `main` if a bad deploy is the cause.\n" +
+                  "4. Otherwise check the Firebase Hosting status page and the Sentry dashboard for a flood of runtime errors."
+                ),
+                priority: 1,
+                labelIds: $labelIds
+              } }
+            }')
           RESP=$(curl -fsS -X POST https://api.linear.app/graphql \
             -H "Authorization: $LINEAR_API_KEY" -H "Content-Type: application/json" \
             -d "$PAYLOAD")
