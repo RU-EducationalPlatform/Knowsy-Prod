@@ -1,0 +1,8 @@
+dist/
+node_modules/
+.firebase/
+vendor/
+modules/legacy/
+*.min.js
+*.min.css
+package-lock.json

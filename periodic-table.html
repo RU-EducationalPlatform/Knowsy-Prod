@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Periodic Table — Knowsy</title>
+<link rel="stylesheet" href="./assets/knowsy.css" />
+<link rel="stylesheet" href="./assets/periodic-table.css" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<!-- Persistent in-app navbar mounts here at runtime — see src/periodic-table.js. -->
+
+<div class="pt-page" data-screen-label="Periodic Table">
+
+  <!-- ============ TOP ============ -->
+  <div class="pt-top">
+    <div>
+      <h1>Every <em>element</em><br/>on the periodic table.</h1>
+      <p class="sub">Hover for the basics, click for the dossier. Recolor the table by category, state, electronegativity, or year discovered.</p>
+    </div>
+  </div>
+
+  <!-- ============ CHALLENGE BANNER ============ -->
+  <section class="pt-chal" id="chal">
+    <span class="tag" id="chalTag">Challenge 01 / 12</span>
+    <div class="prompt" id="chalPrompt">Click any <em>noble gas</em> — they sit on the right edge.</div>
+    <div class="status" id="chalStatus"><span class="dot"></span><span class="lab">Try it</span></div>
+    <div class="actions">
+      <div class="pt-chal-pick-wrap">
+        <button type="button" id="chalPickBtn" class="pt-chal-pick"
+                aria-haspopup="listbox" aria-expanded="false" aria-controls="chalPickList">
+          <span id="chalPickLabel">01 · Click a noble gas</span>
+          <span class="caret" aria-hidden="true">▾</span>
+        </button>
+        <ul role="listbox" id="chalPickList" class="pt-chal-pop" hidden></ul>
+      </div>
+      <button id="chalSkip" type="button">Skip</button>
+    </div>
+  </section>
+
+  <!-- ============ TOOLBAR ============ -->
+  <section class="pt-tools">
+    <div class="pt-search-wrap">
+      <input id="ptSearch" type="search" placeholder="Search element name or symbol… (e.g. iron, Au)" autocomplete="off" />
+    </div>
+    <div class="pt-mode" role="group" aria-label="Colour by">
+      <span class="lab">Colour by</span>
+      <div class="seg" data-seg="mode">
+        <button data-v="category"  class="is-on" type="button">Category</button>
+        <button data-v="phase"      type="button">State</button>
+        <button data-v="block"      type="button">Block</button>
+        <button data-v="electroneg" type="button">Electronegativity</button>
+        <button data-v="discovered" type="button">Year discovered</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TABLE + LEGEND ============ -->
+  <div class="pt-stage">
+    <div class="pt-grid-wrap">
+      <div class="pt-grid" id="ptGrid"></div>
+    </div>
+    <aside class="pt-legend" id="ptLegend"></aside>
+  </div>
+
+  <!-- ============ ELEMENT MODAL ============ -->
+  <div class="pt-modal" id="elementModal" hidden role="dialog" aria-modal="true" aria-labelledby="modalName">
+    <div class="pt-modal-backdrop" id="modalBackdrop"></div>
+    <div class="pt-modal-card">
+      <button class="pt-modal-close" id="modalClose" type="button" aria-label="Close">✕</button>
+      <header class="pt-modal-head">
+        <div class="pt-modal-num" id="modalNum">79</div>
+        <div class="pt-modal-symbol" id="modalSymbol">Au</div>
+        <div class="pt-modal-meta">
+          <h2 class="pt-modal-name" id="modalName">Gold</h2>
+          <div class="pt-modal-tag" id="modalTag">Transition metal · solid · 196.97 u</div>
+        </div>
+      </header>
+
+      <div class="pt-modal-body">
+        <section class="pt-modal-shells">
+          <h3>Electron shells</h3>
+          <svg id="modalBohr" class="pt-bohr" viewBox="0 0 320 320" aria-label="Bohr model"></svg>
+          <div class="pt-modal-config" id="modalConfig">[Xe] 4f¹⁴ 5d¹⁰ 6s¹</div>
+        </section>
+
+        <section class="pt-modal-stats">
+          <h3>Properties</h3>
+          <div class="pt-stats-grid" id="modalStats"></div>
+        </section>
+
+        <section class="pt-modal-summary">
+          <h3>About</h3>
+          <p id="modalSummary">—</p>
+          <p class="pt-modal-discovered" id="modalDiscovered">—</p>
+        </section>
+      </div>
+
+      <footer class="pt-modal-foot">
+        <button id="modalPrev" type="button">‹ Previous</button>
+        <button id="modalNext" type="button">Next ›</button>
+      </footer>
+    </div>
+  </div>
+
+  <footer class="pt-foot">
+    <div>118 elements · data: <a href="https://github.com/Bowserinator/Periodic-Table-JSON" target="_blank" rel="noopener">Bowserinator/Periodic-Table-JSON</a> (CC0)</div>
+    <div>Atomic mass in unified atomic mass units (u). Electronegativity on the Pauling scale.</div>
+  </footer>
+</div>
+
+<script type="module" src="./src/periodic-table.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,61 @@
+name: PR preview
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  pull-requests: write
+  checks: write
+
+concurrency:
+  group: preview-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  preview:
+    # Skip on PRs from forks — they can't access the Firebase service account secret.
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - run: npm ci
+
+      - name: Build
+        run: npm run build
+        env:
+          VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY_DEV }}
+          VITE_FIREBASE_AUTH_DOMAIN: ${{ secrets.VITE_FIREBASE_AUTH_DOMAIN_DEV }}
+          VITE_FIREBASE_PROJECT_ID: ${{ secrets.VITE_FIREBASE_PROJECT_ID_DEV }}
+          VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID_DEV }}
+
+      # Skips until FIREBASE_SERVICE_ACCOUNT_DEV + FIREBASE_PROJECT_ID_DEV are set.
+      - name: Check deploy secrets
+        id: check
+        shell: bash
+        env:
+          SA: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_DEV }}
+          PID: ${{ secrets.FIREBASE_PROJECT_ID_DEV }}
+        run: |
+          if [ -n "$SA" ] && [ -n "$PID" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::warning title=PR preview skipped::Set FIREBASE_SERVICE_ACCOUNT_DEV and FIREBASE_PROJECT_ID_DEV in repo Secrets to enable preview channels."
+          fi
+
+      - name: Deploy preview channel
+        if: steps.check.outputs.ready == 'true'
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_DEV }}
+          projectId: ${{ secrets.FIREBASE_PROJECT_ID_DEV }}
+          expires: 7d

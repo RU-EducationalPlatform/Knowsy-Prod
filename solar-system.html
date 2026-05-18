@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Solar System — Knowsy</title>
+<link rel="stylesheet" href="./assets/knowsy.css" />
+<link rel="stylesheet" href="./assets/solar-system.css" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body class="ss-body">
+
+<!-- Persistent in-app navbar mounts here at runtime — see src/solar-system.js. -->
+
+<div class="ss-page" data-screen-label="Solar System">
+
+  <!-- ============ TOP ============ -->
+  <div class="ss-top">
+    <div>
+      <h1>A walking tour of the <em>solar system.</em></h1>
+      <p class="sub">Click any planet to fly to it. Zoom with the wheel, drag to orbit.</p>
+    </div>
+    <div class="ss-top-pills">
+      <!-- Custom date trigger + popover. Replaces <input type="date">,
+           which on macOS Safari renders as a generic OS dropdown that
+           fights the editorial aesthetic. -->
+      <div class="ss-date-wrap">
+        <button class="ss-date-trigger" id="dateTrigger" type="button"
+                aria-haspopup="dialog" aria-expanded="false">
+          <span class="lab">Simulated date</span>
+          <span class="val" id="dateLabel">January 2024</span>
+          <span class="caret" aria-hidden="true">▾</span>
+        </button>
+        <div class="ss-date-pop" id="datePop" role="dialog" aria-label="Pick a date" hidden>
+          <div class="ss-date-yr-row">
+            <button class="ss-date-step" id="yrPrev" type="button" aria-label="Previous year">‹</button>
+            <span class="ss-date-yr" id="yrDisplay">2024</span>
+            <button class="ss-date-step" id="yrNext" type="button" aria-label="Next year">›</button>
+          </div>
+          <div class="ss-date-yr-shortcuts">
+            <button data-yr="1969" type="button">1969</button>
+            <button data-yr="2000" type="button">2000</button>
+            <button data-yr="2030" type="button">2030</button>
+            <button data-yr="2100" type="button">2100</button>
+          </div>
+          <div class="ss-date-mo-grid" id="moGrid"></div>
+          <div class="ss-date-presets">
+            <button id="dateToday" type="button">Today</button>
+            <button id="dateClose" class="ss-date-close" type="button">Done</button>
+          </div>
+        </div>
+      </div>
+      <button class="ss-pill" id="resetView" type="button">⟲ Reset view</button>
+    </div>
+  </div>
+
+  <!-- ============ CHALLENGE BANNER ============ -->
+  <section class="ss-chal" id="chal">
+    <span class="tag" id="chalTag">Challenge 01 / 10</span>
+    <div class="prompt" id="chalPrompt">Fly to the <em>third planet</em> from the Sun.</div>
+    <div class="status" id="chalStatus"><span class="dot"></span><span class="lab">Try it</span></div>
+    <div class="actions">
+      <div class="ss-chal-pick-wrap">
+        <button type="button" id="chalPickBtn" class="ss-chal-pick"
+                aria-haspopup="listbox" aria-expanded="false" aria-controls="chalPickList">
+          <span id="chalPickLabel">01 · Find Earth</span>
+          <span class="caret" aria-hidden="true">▾</span>
+        </button>
+        <ul role="listbox" id="chalPickList" class="ss-chal-pop" hidden></ul>
+      </div>
+      <button id="chalSkip" type="button">Skip</button>
+    </div>
+  </section>
+
+  <!-- ============ SCENE ============ -->
+  <div class="ss-stage">
+    <canvas id="scene"></canvas>
+
+    <!-- Body labels — HTML overlays positioned via 3D→2D projection
+         from JS each frame. Fade with distance from camera; brighten
+         on hover. -->
+    <div class="ss-labels" id="labels" aria-hidden="true"></div>
+
+    <!-- Loading overlay — fades + removes itself when all textures land. -->
+    <div class="ss-load" id="loadOverlay">
+      <div class="ss-load-inner">
+        <div class="ss-load-eyebrow">LOADING NASA-DERIVED TEXTURES</div>
+        <div class="ss-load-name">2K planet maps · solarsystemscope.com</div>
+        <div class="ss-load-bar"><div class="ss-load-fill" id="loadFill"></div></div>
+        <div class="ss-load-pct" id="loadPct">0%</div>
+      </div>
+    </div>
+
+    <!-- HUD — split into discrete groups so each control reads as
+         its own thing. flex-wrap kicks in on narrow viewports so
+         the jump strip drops to its own row. -->
+    <div class="ss-hud-bottom">
+      <div class="ss-hud-group" aria-label="Playback">
+        <button class="ss-hud-btn" id="playPause" type="button" aria-label="Play / pause">
+          <span class="play">▶</span><span class="pause">❚❚</span>
+        </button>
+        <span class="ss-hud-divider" aria-hidden="true"></span>
+        <div class="ss-hud-seg" data-seg="speed" role="group" aria-label="Time speed">
+          <button data-v="0.25" type="button">¼×</button>
+          <button data-v="1"    class="is-on" type="button">1×</button>
+          <button data-v="4"    type="button">4×</button>
+          <button data-v="16"   type="button">16×</button>
+          <button data-v="64"   type="button">64×</button>
+        </div>
+      </div>
+
+      <div class="ss-hud-group" aria-label="Camera">
+        <div class="ss-hud-seg" data-seg="mode" role="group" aria-label="Camera mode">
+          <button data-v="orbit" class="is-on" type="button">Orbit</button>
+          <button data-v="fly"  type="button">Fly · WASD</button>
+        </div>
+      </div>
+
+      <div class="ss-hud-group" aria-label="Display">
+        <button class="ss-hud-toggle" id="toggleLabels" type="button"
+                aria-pressed="false" title="Show body labels">Labels</button>
+        <button class="ss-hud-toggle is-on" id="toggleTrails" type="button"
+                aria-pressed="true" title="Show orbit trails">Trails</button>
+        <button class="ss-hud-toggle" id="toggleNBody" type="button"
+                aria-pressed="false"
+                title="Toggle full N-body gravitation (Sun + 8 planets, velocity-Verlet, real GM in AU³/day²). Off = closed-form Keplerian two-body.">N-body</button>
+      </div>
+
+      <div class="ss-hud-group ss-hud-group-jump" id="jumpRow"
+           role="group" aria-label="Jump to body"></div>
+    </div>
+
+    <div class="ss-hint" id="hint">Drag to orbit · scroll to zoom · click a planet</div>
+
+    <!-- Fly-mode key legend — visible only when document.body[data-flymode="true"] -->
+    <div class="ss-fly-legend" id="flyLegend" aria-hidden="true">
+      <div class="row"><span class="keys"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></span><span class="lab">move</span></div>
+      <div class="row"><span class="keys"><kbd>Space</kbd> / <kbd>Q</kbd></span><span class="lab">up · down</span></div>
+      <div class="row"><span class="keys"><kbd>Shift</kbd></span><span class="lab">boost</span></div>
+      <div class="row"><span class="keys">click</span><span class="lab">capture mouse</span></div>
+      <div class="row"><span class="keys"><kbd>Esc</kbd></span><span class="lab">release</span></div>
+    </div>
+    <!-- Reticle in the middle of the canvas while flying -->
+    <div class="ss-reticle" id="reticle" aria-hidden="true"></div>
+
+    <!-- Info card — slides in from the right when a planet is selected. -->
+    <aside class="ss-info" id="info" hidden aria-live="polite">
+      <button class="ss-info-close" id="infoClose" type="button" aria-label="Close">✕</button>
+      <div class="ss-info-eyebrow" id="infoEyebrow">PLANET No. 03 / TERRESTRIAL</div>
+      <h2 class="ss-info-name" id="infoName">Earth</h2>
+      <div class="ss-info-tag" id="infoTag">third from the Sun</div>
+      <div class="ss-info-stats" id="infoStats"></div>
+      <p class="ss-info-blurb" id="infoBlurb"></p>
+      <div class="ss-info-actions">
+        <button id="infoCompare" type="button">Compare ↔</button>
+        <button id="infoNext" type="button">Next →</button>
+      </div>
+    </aside>
+
+    <!-- Compare panel — slides in from the LEFT when compare mode is
+         armed. Shows the comparison body's stats next to the primary
+         info card on the right. -->
+    <aside class="ss-info ss-info-b" id="compare" hidden aria-live="polite">
+      <button class="ss-info-close" id="compareClose" type="button" aria-label="Close compare">✕</button>
+      <div class="ss-info-eyebrow" id="cmpEyebrow">PLANET No. 04 / TERRESTRIAL</div>
+      <h2 class="ss-info-name" id="cmpName">Mars</h2>
+      <div class="ss-info-tag" id="cmpTag">the rusty desert</div>
+      <div class="ss-info-stats" id="cmpStats"></div>
+      <p class="ss-info-blurb" id="cmpBlurb"></p>
+    </aside>
+  </div>
+
+</div>
+
+<script type="module" src="./src/solar-system.js"></script>
+
+</body>
+</html>

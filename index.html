@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Knowsy — learn out loud.</title>
+<meta name="description" content="Knowsy is an educational platform built for students who'd rather ask why than memorize what." />
+<link rel="stylesheet" href="./assets/knowsy.css" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="page" data-screen-label="Landing">
+
+  <!-- ============ NAV ============ -->
+  <header class="nav">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <span class="brand-name">Knowsy</span>
+    </div>
+    <nav class="nav-center">
+      <a href="#courses">Courses</a>
+      <a href="#how">How it works</a>
+      <a href="#educators">For educators</a>
+      <a href="#stories">Stories</a>
+    </nav>
+    <div class="nav-right">
+      <a class="btn btn-ghost" href="./login.html">Sign in</a>
+      <a class="btn btn-primary" href="./login.html?mode=signup">Start learning <span class="arrow">→</span></a>
+    </div>
+  </header>
+
+  <!-- ============ HERO ============ -->
+  <section class="hero">
+    <div class="hero-copy">
+      <div class="hero-eyebrow">
+        <span class="dot" aria-hidden="true"></span>
+        <span class="eyebrow">No. 014 — Spring Semester, 2026</span>
+      </div>
+
+      <h1 class="hero-title">
+        <span class="word"><span>The</span></span>
+        <span class="word"><span>curious</span></span><br/>
+        <span class="word"><span>kind&nbsp;of</span></span>
+        <span class="word"><span><em>knowing.</em></span></span>
+      </h1>
+
+      <p class="hero-sub">
+        Knowsy is an educational platform built for students who'd rather <em class="italic serif">ask why</em> than memorize what.
+        Bite-sized lessons, live cohorts, and tutors that actually listen.
+      </p>
+
+      <div class="hero-cta-row">
+        <a class="btn btn-acid" href="./login.html?mode=signup">Begin a lesson <span class="arrow">→</span></a>
+        <a class="btn btn-ghost" href="#how">Watch a demo</a>
+        <span class="meta">Free for K–12 students</span>
+      </div>
+    </div>
+
+    <!-- Right column: stage -->
+    <div class="stage" aria-hidden="true">
+
+      <div class="orbit">
+        <svg viewBox="-220 -220 440 440" width="100%" height="100%">
+          <circle class="ring" cx="0" cy="0" r="170"/>
+          <circle class="ring r2" cx="0" cy="0" r="210"/>
+        </svg>
+      </div>
+
+      <div class="glyph g-pi">π</div>
+      <div class="glyph g-sigma">Σ</div>
+      <div class="glyph g-atom">⚛</div>
+      <div class="glyph g-quote">"</div>
+
+      <div class="orbit" style="z-index:3">
+        <div class="lesson-card">
+          <span class="tag">Lesson 03 / Chemistry</span>
+          <div class="title">Why <em>salt</em> dissolves in water.</div>
+          <div class="meta">9 min · Mr. Okafor</div>
+          <div class="progress"></div>
+          <div class="pct"><span>Progress</span><span>64%</span></div>
+        </div>
+      </div>
+
+      <div class="floater f-1"><span class="swatch"></span> ANSWERED · 4m AGO</div>
+      <div class="floater f-2"><span class="swatch"></span> +12 XP STREAK</div>
+    </div>
+
+  </section>
+</div>
+
+<!-- ============ MARQUEE ============ -->
+<div class="marquee-band" aria-hidden="true">
+  <div class="marquee-track">
+    <span>Bits <i class="dot"></i> Boolean Algebra <i class="dot"></i> Karnaugh Maps <i class="dot"></i> Verilog <i class="dot"></i> x86 <i class="dot"></i> ARM64 <i class="dot"></i> RISC-V <i class="dot"></i> LC-3 <i class="dot"></i> Smith Charts <i class="dot"></i> Antenna Arrays <i class="dot"></i> Periodic Table <i class="dot"></i> Semiconductors <i class="dot"></i> Shaders <i class="dot"></i> Red-Black Trees <i class="dot"></i></span>
+    <span>Bits <i class="dot"></i> Boolean Algebra <i class="dot"></i> Karnaugh Maps <i class="dot"></i> Verilog <i class="dot"></i> x86 <i class="dot"></i> ARM64 <i class="dot"></i> RISC-V <i class="dot"></i> LC-3 <i class="dot"></i> Smith Charts <i class="dot"></i> Antenna Arrays <i class="dot"></i> Periodic Table <i class="dot"></i> Semiconductors <i class="dot"></i> Shaders <i class="dot"></i> Red-Black Trees <i class="dot"></i></span>
+  </div>
+</div>
+
+<!-- ============ FEATURES ============ -->
+<div class="page">
+  <section class="section" id="how">
+    <div class="section-head">
+      <h2>A workbench,<br/>not a <em>textbook.</em></h2>
+      <p>
+        Knowing comes from doing. We make pages that respond — <em class="italic serif">you push, they push back.</em>
+        The understanding follows.
+      </p>
+    </div>
+
+    <div class="feature-grid">
+      <article class="feature">
+        <div>
+          <div class="num">/ 01</div>
+          <h3>Reading tells you. Doing makes it <em>stick.</em></h3>
+          <p>You can read three chapters about how something works and still not know it. Build it — even briefly, even badly — and you'll remember it for years. Knowsy is the <em class="italic serif">doing half</em> of every subject we cover.</p>
+        </div>
+        <div class="visual viz-typing">
+          <div class="line">&gt; tell me how this works</div>
+          <div class="line hi">&gt; better — <span class="pc">▶</span> let me show you<span class="caret"></span></div>
+        </div>
+      </article>
+
+      <article class="feature">
+        <div>
+          <div class="num">/ 02</div>
+          <h3>Be wrong on <em>purpose.</em></h3>
+          <p>Every page is a safe place to try the wrong answer. Push the button you're not sure about. Run the thing that probably breaks. Knowsy just shows you what happened — no points off, no teacher watching. <em class="italic serif">That's</em> where understanding actually shows up.</p>
+        </div>
+        <div class="visual viz-grid" aria-hidden="true">
+          <span class="cell">try</span>
+          <span class="cell on">fail</span>
+          <span class="cell on acid">try</span>
+          <span class="cell on">got it</span>
+        </div>
+      </article>
+
+      <article class="feature">
+        <div>
+          <div class="num">/ 03</div>
+          <h3>Teach once. Stop <em>answering</em> it again.</h3>
+          <p>For educators: stop redrawing the same diagram every semester. Hand students a working version of the lesson — they poke at it on their own time. You spend class on the questions that need a <em class="italic serif">human</em>, not the ones a simulator can answer.</p>
+        </div>
+        <div class="visual viz-bars">
+          <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- ============ STATS ============ -->
+  <section class="stats" aria-label="Knowsy by the numbers">
+    <div class="stat"><div class="num">22</div><div class="label">Hands-on pages</div></div>
+    <div class="stat"><div class="num">13</div><div class="label">Subjects covered</div></div>
+    <div class="stat"><div class="num"><em>∞</em></div><div class="label">Tries per question</div></div>
+    <div class="stat"><div class="num">$<em>0</em></div><div class="label">Forever, for students</div></div>
+  </section>
+
+  <!-- ============ CTA ============ -->
+  <section class="cta-band" id="join">
+    <h2>Stop reading <em>about</em> things.<br/>Start <em>knowing</em> them.</h2>
+    <p>Free for any student under 18. Schools and tutors get a single-pricing membership — no seat counting, no contract gymnastics.</p>
+    <div class="row">
+      <a class="btn-acid btn" href="./login.html?mode=signup">Make an account <span class="arrow">→</span></a>
+      <a class="ghost-light" href="#educators">For educators</a>
+    </div>
+    <div class="deco" aria-hidden="true">
+      <div class="deco-glyph">k</div>
+    </div>
+  </section>
+
+  <!-- ============ FOOT ============ -->
+  <footer class="foot">
+    <div class="left">© 2026 Knowsy Co-op</div>
+    <div class="center">— Made for the curious —</div>
+    <div class="right">Brooklyn · Lagos · Kyoto</div>
+  </footer>
+
+</div>
+
+<script type="module" src="./src/landing.js"></script>
+
+</body>
+</html>

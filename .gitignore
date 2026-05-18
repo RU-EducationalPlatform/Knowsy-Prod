@@ -1,0 +1,24 @@
+.DS_Store
+.claude/
+CLAUDE.md
+node_modules/
+.cache/
+dist/
+.env
+.env.local
+.firebase/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+pubsub-debug.log
+database-debug.log
+storage-debug.log
+emulator-seed/
+
+# From main: editor backups, local config, sqlite databases
+*~
+school-config.json
+*.db
+
+# Design handoff source bundle — not part of the app
+Knowsy.zip

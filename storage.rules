@@ -1,0 +1,55 @@
+rules_version = '2';
+
+// Default-deny. Every path needs an explicit allow.
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    function isSignedIn() { return request.auth != null; }
+
+    // Same pattern as firestore.rules — `is list` removed because it can
+    // throw on null even with prior guards. The setters write a list; the
+    // `in` operator fails closed on non-lists.
+    function isInClass(cid) {
+      return isSignedIn()
+        && 'classes' in request.auth.token
+        && request.auth.token.classes != null
+        && cid in request.auth.token.classes;
+    }
+
+    // Teachers identified by Firestore lookup. Storage rules can call
+    // firestore.get() — paid by one Firestore read per Storage operation.
+    function isClassTeacher(cid) {
+      return isSignedIn()
+        && firestore.get(/databases/(default)/documents/classes/$(cid)).data.teacherUid == request.auth.uid;
+    }
+
+    function isClassMember(cid) {
+      return isInClass(cid) || isClassTeacher(cid);
+    }
+
+    // Assignment attachments authored by the teacher.
+    match /classes/{c}/assignments/{a}/attachments/{file=**} {
+      allow read: if isClassMember(c);
+      allow write: if isClassTeacher(c)
+        && request.resource.size < 25 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*|application/pdf|text/.*');
+    }
+
+    // Per-student submission attachments.
+    match /classes/{c}/assignments/{a}/submissions/{uid}/{file=**} {
+      allow read: if request.auth.uid == uid || isClassTeacher(c);
+      allow write: if request.auth.uid == uid
+        && request.resource.size < 25 * 1024 * 1024;
+    }
+
+    // Live broadcast chunks (WebM / MP4, 5 MB cap per chunk).
+    // Cleanup is admin-SDK only.
+    match /classes/{c}/broadcasts/{sessionId}/{chunk} {
+      allow read: if isClassMember(c);
+      allow create: if isClassTeacher(c)
+        && request.resource.size < 5 * 1024 * 1024
+        && request.resource.contentType.matches('video/webm|video/mp4');
+      allow update, delete: if false;
+    }
+  }
+}

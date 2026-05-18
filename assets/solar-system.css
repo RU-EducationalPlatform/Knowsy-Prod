@@ -1,0 +1,669 @@
+/* ============ Solar System — full lesson page ============ */
+/* Body uses a darker space backdrop than the rest of the app — the
+   editorial paper still wraps the chrome (navbar, hero, challenge),
+   the canvas itself sits on inky black. */
+.ss-body { background: var(--paper); }
+
+.ss-page {
+  position: relative;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 56px 40px 48px;
+}
+
+/* ---- Top hero ---- */
+.ss-top {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 28px;
+  align-items: end;
+  margin-bottom: 16px;
+}
+.ss-top h1 {
+  font-family: var(--serif); font-weight: 400;
+  font-size: clamp(36px, 4.4vw, 60px);
+  letter-spacing: -0.005em;
+  word-spacing: 0.06em;
+  line-height: 1.02;
+}
+.ss-top h1 em { font-style: italic; }
+.ss-top .sub {
+  font-family: var(--serif); font-style: italic;
+  font-size: 18px; color: var(--ink-soft);
+  margin-top: 8px;
+}
+.ss-top-pills { display: inline-flex; gap: 8px; align-items: center; }
+.ss-pill {
+  font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em;
+  text-transform: uppercase;
+  border: 1px solid var(--ink); background: var(--paper); color: var(--ink);
+  padding: 7px 14px; border-radius: 999px;
+  cursor: pointer; transition: all .15s ease;
+}
+.ss-pill:hover { background: var(--ink); color: var(--paper); }
+
+/* Custom date pill + popover — editorial replacement for the OS
+   <input type="date">. Same pill aesthetic as the other Knowsy
+   controls, opens a paper card with a year stepper, year shortcuts,
+   month grid, and Today/Done actions. */
+.ss-date-wrap { position: relative; display: inline-block; }
+.ss-date-trigger {
+  display: inline-flex; align-items: center; gap: 10px;
+  border: 1px solid var(--ink); border-radius: 999px;
+  background: var(--paper); color: var(--ink);
+  padding: 7px 14px;
+  cursor: pointer; transition: all .15s ease;
+  font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.ss-date-trigger:hover { background: var(--paper-2); }
+.ss-date-trigger .lab { color: var(--ink-soft); }
+.ss-date-trigger .val {
+  font-family: var(--serif); font-style: italic;
+  font-size: 16px; color: var(--ink);
+  letter-spacing: -0.005em; text-transform: none;
+  font-variant-numeric: tabular-nums;
+}
+.ss-date-trigger .caret {
+  font-size: 10px; color: var(--ink-soft);
+  transition: transform .2s ease, color .2s ease;
+}
+.ss-date-trigger[aria-expanded="true"] {
+  background: var(--ink); color: var(--paper);
+}
+.ss-date-trigger[aria-expanded="true"] .lab { color: rgba(242, 237, 226, 0.7); }
+.ss-date-trigger[aria-expanded="true"] .val { color: var(--paper); }
+.ss-date-trigger[aria-expanded="true"] .caret {
+  transform: rotate(180deg); color: var(--paper);
+}
+
+.ss-date-pop {
+  position: fixed;
+  background: var(--paper);
+  border: 1px solid var(--ink); border-radius: 12px;
+  box-shadow: 0 24px 48px -16px rgba(14, 19, 48, 0.40);
+  padding: 18px;
+  width: 320px;
+  z-index: 100;
+}
+.ss-date-pop[hidden] { display: none; }
+
+.ss-date-yr-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--rule);
+  margin-bottom: 14px;
+}
+.ss-date-yr {
+  font-family: var(--serif); font-style: italic; font-weight: 400;
+  font-size: 38px; color: var(--ink);
+  letter-spacing: -0.015em;
+  font-variant-numeric: tabular-nums;
+  flex: 1;
+  text-align: center;
+}
+.ss-date-step {
+  width: 36px; height: 36px;
+  border: 1px solid var(--rule); background: var(--paper);
+  color: var(--ink-soft);
+  border-radius: 50%; cursor: pointer;
+  font-family: var(--serif); font-size: 22px; line-height: 1;
+  display: grid; place-items: center;
+  transition: all .12s ease;
+}
+.ss-date-step:hover { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+
+.ss-date-yr-shortcuts {
+  display: flex; gap: 4px; flex-wrap: wrap; justify-content: center;
+  margin-bottom: 14px;
+}
+.ss-date-yr-shortcuts button {
+  font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.16em;
+  padding: 4px 10px;
+  border: 1px solid var(--rule); background: var(--paper); color: var(--ink-soft);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all .12s ease;
+  font-variant-numeric: tabular-nums;
+}
+.ss-date-yr-shortcuts button:hover { border-color: var(--ink); color: var(--ink); }
+
+.ss-date-mo-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  margin-bottom: 14px;
+}
+.ss-date-mo-grid button {
+  font-family: var(--mono); font-size: 11px; letter-spacing: 0.10em;
+  text-transform: uppercase;
+  padding: 9px 4px;
+  border: 1px solid var(--rule); background: var(--paper); color: var(--ink);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all .12s ease;
+}
+.ss-date-mo-grid button:hover { background: var(--paper-2); }
+.ss-date-mo-grid button.is-on {
+  background: var(--ink); color: var(--paper); border-color: var(--ink);
+}
+
+.ss-date-presets {
+  display: flex; gap: 8px;
+  padding-top: 14px;
+  border-top: 1px solid var(--rule);
+}
+.ss-date-presets button {
+  flex: 1;
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.16em;
+  text-transform: uppercase;
+  padding: 8px 12px;
+  border: 1px solid var(--ink); background: var(--paper); color: var(--ink);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all .15s ease;
+}
+.ss-date-presets button:hover { background: var(--ink); color: var(--paper); }
+.ss-date-presets .ss-date-close { background: var(--ink); color: var(--paper); }
+.ss-date-presets .ss-date-close:hover { background: #000; }
+
+/* ---- Challenge banner — same pattern as other modules ---- */
+.ss-chal {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  gap: 18px; align-items: center;
+  padding: 14px 18px;
+  border: 1px solid var(--ink); border-radius: 10px;
+  background: var(--paper);
+  margin-bottom: 18px;
+}
+.ss-chal .tag {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.18em;
+  text-transform: uppercase; background: var(--ink); color: var(--paper);
+  padding: 4px 8px; border-radius: 3px;
+}
+.ss-chal .prompt { font-family: var(--serif); font-size: 20px; line-height: 1.2; }
+.ss-chal .prompt em { font-style: italic; }
+.ss-chal .prompt code {
+  font-family: var(--mono); font-size: 16px;
+  background: var(--paper-2); padding: 2px 8px; border-radius: 4px;
+}
+.ss-chal .status {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--ink-soft);
+}
+.ss-chal .status .dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--ink-soft);
+  transition: background-color .25s ease, box-shadow .25s ease;
+}
+.ss-chal.is-solved .status .dot { background: #1F8A5B; box-shadow: 0 0 0 4px rgba(31, 138, 91, .15); }
+.ss-chal.is-solved .status .lab { color: #1F8A5B; }
+.ss-chal .actions { display: inline-flex; gap: 8px; align-items: center; }
+.ss-chal button {
+  border: 1px solid var(--ink); background: var(--paper); color: var(--ink);
+  padding: 7px 14px; border-radius: 999px;
+  font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em;
+  text-transform: uppercase; cursor: pointer; transition: all .15s ease;
+}
+.ss-chal button:hover { background: var(--ink); color: var(--paper); }
+.ss-chal-pick-wrap { position: relative; display: inline-block; }
+.ss-chal-pick {
+  display: inline-flex !important; align-items: center; gap: 10px;
+  border: 1px solid var(--ink);
+  background: var(--paper); color: var(--ink);
+  padding: 7px 14px; border-radius: 999px;
+  font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em;
+  text-transform: uppercase; cursor: pointer; outline: none;
+  max-width: 260px;
+}
+.ss-chal-pick:hover { background-color: var(--paper-2) !important; color: var(--ink) !important; }
+.ss-chal-pick > #chalPickLabel { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ss-chal-pick .caret { font-size: 9px; color: var(--ink-soft); transition: transform .2s ease, color .2s ease; }
+.ss-chal-pick[aria-expanded="true"] { background: var(--ink) !important; color: var(--paper) !important; }
+.ss-chal-pick[aria-expanded="true"] .caret { transform: rotate(180deg); color: var(--paper); }
+.ss-chal-pop {
+  position: fixed;
+  margin: 0; padding: 6px;
+  list-style: none;
+  min-width: 300px; max-width: 380px;
+  max-height: 360px; overflow-y: auto;
+  background: var(--paper);
+  border: 1px solid var(--ink); border-radius: 10px;
+  box-shadow: 0 18px 38px -12px rgba(14, 19, 48, 0.35),
+              0 4px 10px -2px rgba(14, 19, 48, 0.12);
+  z-index: 90;
+  scrollbar-width: thin; scrollbar-color: var(--rule) transparent;
+}
+.ss-chal-pop::-webkit-scrollbar { width: 6px; }
+.ss-chal-pop::-webkit-scrollbar-thumb { background: var(--rule); border-radius: 3px; }
+.ss-chal-pop li {
+  display: grid; grid-template-columns: auto 1fr auto;
+  gap: 12px; align-items: center;
+  padding: 9px 12px; border-radius: 6px;
+  cursor: pointer; outline: none;
+  font-family: var(--mono); color: var(--ink);
+  border-bottom: 1px dashed var(--rule);
+  transition: background-color .12s ease;
+}
+.ss-chal-pop li:last-child { border-bottom: none; }
+.ss-chal-pop li:hover, .ss-chal-pop li:focus-visible { background: var(--paper-2); }
+.ss-chal-pop li[aria-selected="true"] {
+  background: var(--ink); color: var(--paper);
+  border-bottom-color: transparent;
+}
+.ss-chal-pop li[aria-selected="true"] .num,
+.ss-chal-pop li[aria-selected="true"] .meta { color: rgba(242, 237, 226, 0.7); }
+.ss-chal-pop li .num {
+  font-size: 9px; letter-spacing: 0.18em; color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+.ss-chal-pop li .lbl {
+  font-size: 13px; font-weight: 500; letter-spacing: -0.005em;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.ss-chal-pop li .meta {
+  font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--ink-soft);
+  padding: 2px 8px; border: 1px solid var(--rule); border-radius: 3px;
+}
+.ss-chal-pop li[aria-selected="true"] .meta { border-color: rgba(242, 237, 226, 0.3); }
+
+/* ---- Stage: canvas + overlays ---- */
+.ss-stage {
+  position: relative;
+  border-radius: 14px;
+  border: 1px solid var(--ink);
+  overflow: hidden;
+  background: #05070d;
+  height: clamp(560px, 72vh, 880px);
+  box-shadow: 0 30px 80px -40px rgba(14, 19, 48, 0.65);
+}
+.ss-stage canvas {
+  width: 100%; height: 100%;
+  display: block;
+  cursor: grab;
+}
+.ss-stage canvas.is-dragging { cursor: grabbing; }
+.ss-stage canvas.is-hovering { cursor: pointer; }
+
+/* ---- Body labels (3D-projected HTML) ---- */
+.ss-labels {
+  position: absolute; inset: 0;
+  pointer-events: none;
+  z-index: 5;
+  font-family: var(--mono);
+}
+.ss-label {
+  position: absolute;
+  top: 0; left: 0;
+  display: inline-flex; flex-direction: column; align-items: flex-start;
+  /* translate set in JS via transform; use will-change for smoother
+     position updates than left/top reflow */
+  transform: translate3d(-9999px, -9999px, 0);
+  will-change: transform, opacity;
+  padding: 4px 8px;
+  background: rgba(8, 12, 22, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity .25s ease, transform .04s linear;
+}
+.ss-label .name {
+  font-size: 10px; letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(245, 241, 233, 0.95);
+}
+.ss-label .meta {
+  font-size: 8.5px; letter-spacing: 0.12em;
+  color: rgba(245, 241, 233, 0.55);
+  font-variant-numeric: tabular-nums;
+}
+.ss-label.is-near { opacity: 1; }
+.ss-label.is-active { border-color: var(--acid); background: rgba(8, 12, 22, 0.78); }
+.ss-label.is-active .name { color: #fff; }
+
+/* ---- Loading overlay ---- */
+.ss-load {
+  position: absolute; inset: 0;
+  display: grid; place-items: center;
+  background: #05070d;
+  color: #f5f1e9;
+  z-index: 8;
+  transition: opacity .5s ease;
+}
+.ss-load.is-done { opacity: 0; pointer-events: none; }
+.ss-load-inner {
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+  min-width: 280px;
+}
+.ss-load-eyebrow {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.22em;
+  color: rgba(245, 241, 233, 0.55);
+}
+.ss-load-name {
+  font-family: var(--serif); font-style: italic;
+  font-size: 22px; color: #f5f1e9;
+}
+.ss-load-bar {
+  width: 280px; height: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 999px; overflow: hidden;
+}
+.ss-load-fill {
+  height: 100%; width: 0%;
+  background: linear-gradient(90deg, #6aaaff, #f5f1e9);
+  transition: width .25s ease;
+}
+.ss-load-pct {
+  font-family: var(--mono); font-size: 11px; letter-spacing: 0.16em;
+  color: rgba(245, 241, 233, 0.7);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- Bottom HUD: discrete pill-groups across the bottom ---- */
+.ss-hud-bottom {
+  position: absolute;
+  left: 24px; right: 24px; bottom: 22px;
+  display: flex; align-items: center;
+  justify-content: flex-start;
+  gap: 14px;
+  flex-wrap: wrap;
+  z-index: 5;
+}
+.ss-hud-group {
+  display: inline-flex; align-items: center; gap: 8px;
+  /* Frosted glass — slightly stronger blur, softer fill. */
+  background: rgba(10, 14, 26, 0.55);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 999px;
+  padding: 6px 10px;
+  /* Subtle inner highlight + drop shadow gives the pill weight on
+     the dark scene without making it look heavy. */
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08),
+              0 12px 28px -16px rgba(0, 0, 0, 0.7);
+}
+/* Hairline divider between sub-controls within one group (e.g.
+   between play/pause and the speed segment). */
+.ss-hud-divider {
+  display: inline-block;
+  width: 1px; height: 18px;
+  background: rgba(255, 255, 255, 0.10);
+  margin: 0 2px;
+}
+/* The jump-pill group fills remaining horizontal space and
+   scrolls horizontally on narrow viewports rather than wrapping. */
+.ss-hud-group-jump {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.ss-hud-group-jump::-webkit-scrollbar { display: none; }
+.ss-hud-group-jump button { flex: 0 0 auto; }
+
+.ss-hud-btn {
+  width: 30px; height: 30px;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.04);
+  color: #f5f1e9;
+  cursor: pointer; transition: background-color .12s ease, transform .12s ease;
+  font-size: 11px;
+}
+.ss-hud-btn:hover { background: rgba(255, 255, 255, 0.14); }
+.ss-hud-btn .pause { display: none; }
+.ss-body[data-playing="false"] .ss-hud-btn .play  { display: inline; }
+.ss-body[data-playing="false"] .ss-hud-btn .pause { display: none; }
+.ss-body[data-playing="true"]  .ss-hud-btn .play  { display: none; }
+.ss-body[data-playing="true"]  .ss-hud-btn .pause { display: inline; }
+
+/* Segmented control inside a hud-group. No outer border or fill —
+   the parent group provides those. Buttons are tighter (smaller
+   padding) so multiple groups can sit at once without crowding. */
+.ss-hud-seg { display: inline-flex; gap: 2px; }
+.ss-hud-seg button {
+  font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 5px 11px;
+  border: none;
+  background: transparent; color: rgba(245, 241, 233, 0.7);
+  border-radius: 999px;
+  cursor: pointer; transition: all .12s ease;
+  font-variant-numeric: tabular-nums;
+}
+.ss-hud-seg button:hover { background: rgba(255, 255, 255, 0.08); color: #f5f1e9; }
+.ss-hud-seg button.is-on {
+  background: rgba(245, 241, 233, 0.96); color: #0e1330;
+}
+
+/* Single-button toggles (Labels, Trails). */
+.ss-hud-toggle {
+  font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 5px 12px;
+  border: none;
+  background: transparent; color: rgba(245, 241, 233, 0.7);
+  border-radius: 999px;
+  cursor: pointer; transition: all .12s ease;
+}
+.ss-hud-toggle:hover { background: rgba(255, 255, 255, 0.08); color: #f5f1e9; }
+.ss-hud-toggle.is-on {
+  background: rgba(245, 241, 233, 0.96); color: #0e1330;
+}
+
+/* Labels off state — hides all body labels via the body attribute. */
+.ss-body[data-labels="off"] .ss-label { display: none !important; }
+
+/* Planet jump pills — slightly smaller text so the row reads as
+   "shortcut", not as primary controls. */
+.ss-hud-group-jump button {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.10em;
+  text-transform: uppercase;
+  padding: 5px 10px;
+  border: none;
+  background: transparent; color: rgba(245, 241, 233, 0.65);
+  border-radius: 999px;
+  cursor: pointer; transition: all .12s ease;
+  white-space: nowrap;
+}
+.ss-hud-group-jump button:hover {
+  background: rgba(255, 255, 255, 0.08); color: #f5f1e9;
+}
+.ss-hud-group-jump button.is-active {
+  background: var(--acid); color: #f5f1e9;
+}
+
+.ss-hint {
+  position: absolute;
+  top: 16px; left: 18px;
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(245, 241, 233, 0.55);
+  background: rgba(8, 12, 22, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 6px 10px; border-radius: 999px;
+  z-index: 4;
+  pointer-events: none;
+  transition: opacity .35s ease;
+}
+.ss-hint.is-faded { opacity: 0; }
+
+/* ---- Fly mode: WASD legend + crosshair reticle ---- */
+.ss-fly-legend {
+  position: absolute;
+  top: 16px; right: 16px;
+  display: none;
+  flex-direction: column; gap: 6px;
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(245, 241, 233, 0.85);
+  background: rgba(8, 12, 22, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 12px 14px;
+  border-radius: 10px;
+  z-index: 4;
+  pointer-events: none;
+}
+.ss-fly-legend .row {
+  display: flex; align-items: center; gap: 12px;
+  justify-content: space-between;
+}
+.ss-fly-legend .keys { display: inline-flex; gap: 4px; align-items: center; }
+.ss-fly-legend kbd {
+  font-family: var(--mono); font-size: 10px;
+  padding: 2px 6px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 4px;
+  color: rgba(245, 241, 233, 0.95);
+}
+.ss-fly-legend .lab { color: rgba(245, 241, 233, 0.55); font-size: 9px; }
+.ss-body[data-flymode="true"] .ss-fly-legend { display: flex; }
+
+.ss-reticle {
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 18px; height: 18px;
+  margin: -9px 0 0 -9px;
+  pointer-events: none;
+  display: none;
+  z-index: 4;
+}
+.ss-reticle::before, .ss-reticle::after {
+  content: ''; position: absolute;
+  background: rgba(245, 241, 233, 0.55);
+}
+.ss-reticle::before { left: 50%; top: 0; width: 1px; height: 100%; transform: translateX(-50%); }
+.ss-reticle::after  { top: 50%; left: 0; height: 1px; width: 100%; transform: translateY(-50%); }
+.ss-body[data-flymode="true"] .ss-reticle { display: block; }
+.ss-body[data-flymode="true"] .ss-stage canvas { cursor: crosshair; }
+/* Reticle turns acid-red when it's pointing at a clickable body. */
+.ss-body[data-flyhover="true"] .ss-reticle::before,
+.ss-body[data-flyhover="true"] .ss-reticle::after {
+  background: var(--acid);
+  box-shadow: 0 0 6px rgba(200, 16, 46, 0.6);
+}
+
+/* ---- Info card ---- */
+.ss-info {
+  position: absolute;
+  top: 16px; right: 16px;
+  width: min(380px, calc(100% - 32px));
+  max-height: calc(100% - 96px);
+  overflow-y: auto;
+  /* Editorial paper card on the inky scene — feels like an old field
+     guide page laid on the cosmos. */
+  background: var(--paper);
+  border: 1px solid var(--ink);
+  border-radius: 12px;
+  padding: 22px 24px 20px;
+  z-index: 6;
+  box-shadow: 0 24px 60px -20px rgba(0, 0, 0, 0.7);
+  animation: ss-info-in .35s cubic-bezier(.4, 0, .2, 1);
+  scrollbar-width: thin;
+  scrollbar-color: var(--rule) transparent;
+}
+.ss-info::-webkit-scrollbar { width: 6px; }
+.ss-info::-webkit-scrollbar-thumb { background: var(--rule); border-radius: 3px; }
+.ss-info[hidden] { display: none !important; }
+@keyframes ss-info-in {
+  from { opacity: 0; transform: translateX(20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.ss-info-close {
+  position: absolute; top: 10px; right: 10px;
+  width: 26px; height: 26px;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  border: 1px solid var(--rule);
+  background: var(--paper);
+  color: var(--ink-soft);
+  font-size: 11px; cursor: pointer;
+  transition: all .12s ease;
+}
+.ss-info-close:hover { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.ss-info-eyebrow {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.18em;
+  text-transform: uppercase; color: var(--ink-soft);
+  margin-bottom: 8px;
+}
+.ss-info-name {
+  font-family: var(--serif); font-style: italic; font-weight: 400;
+  font-size: 56px; line-height: 1; color: var(--ink);
+  letter-spacing: -0.015em;
+  margin-bottom: 6px;
+}
+.ss-info-tag {
+  font-family: var(--serif); font-style: italic;
+  font-size: 16px; color: var(--ink-soft);
+  margin-bottom: 18px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--rule);
+}
+.ss-info-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 16px;
+  row-gap: 10px;
+  margin-bottom: 16px;
+}
+.ss-info-stats .stat .lab {
+  display: block;
+  font-family: var(--mono); font-size: 8.5px; letter-spacing: 0.18em;
+  text-transform: uppercase; color: var(--ink-soft);
+  margin-bottom: 2px;
+}
+.ss-info-stats .stat .val {
+  font-family: var(--mono); font-size: 13px;
+  color: var(--ink); font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+.ss-info-blurb {
+  font-family: var(--serif);
+  font-size: 16px; line-height: 1.45;
+  color: var(--ink);
+  margin: 0 0 18px;
+}
+.ss-info-blurb em { font-style: italic; }
+.ss-info-actions { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.ss-info-actions button {
+  font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em;
+  text-transform: uppercase;
+  border: 1px solid var(--ink); background: var(--ink); color: var(--paper);
+  padding: 8px 14px; border-radius: 999px;
+  cursor: pointer; transition: background-color .15s ease;
+}
+.ss-info-actions button:hover { background: #000; }
+
+/* Compare panel — same card design as the right-hand info, but
+   anchored to the left and labelled "B" so users see at a glance
+   it's the comparison body. */
+.ss-info-b {
+  left: 16px; right: auto;
+  animation: ss-info-in-left .35s cubic-bezier(.4, 0, .2, 1);
+}
+@keyframes ss-info-in-left {
+  from { opacity: 0; transform: translateX(-20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.ss-body[data-comparing="true"] .ss-stage canvas { cursor: copy; }
+.ss-body[data-comparing="true"] .ss-hint { opacity: 1; }
+.ss-info-actions button.is-on { background: var(--acid); border-color: var(--acid); }
+
+/* ---- Responsive ---- */
+@media (max-width: 900px) {
+  .ss-page { padding: 32px 16px 32px; }
+  .ss-top { grid-template-columns: 1fr; }
+  .ss-stage { height: 70vh; min-height: 480px; }
+  .ss-info {
+    top: auto; bottom: 86px; right: 12px; left: 12px; width: auto;
+    max-height: 50vh;
+  }
+  .ss-hud-bottom { flex-wrap: wrap; }
+}

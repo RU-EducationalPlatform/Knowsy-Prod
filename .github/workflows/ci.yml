@@ -1,0 +1,62 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main, dev]
+  push:
+    branches: [main, dev]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Format check
+        run: npm run format:check
+        continue-on-error: true # advisory; don't block PRs on style yet
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Build
+        # Use placeholder env so the build doesn't fail on unset vars.
+        # Real Firebase keys are injected only in the deploy workflows.
+        run: npm run build
+        env:
+          VITE_FIREBASE_API_KEY: ci-placeholder
+          VITE_FIREBASE_AUTH_DOMAIN: ci.example.com
+          VITE_FIREBASE_PROJECT_ID: ci-placeholder
+          VITE_FIREBASE_APP_ID: ci-placeholder
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-${{ github.sha }}
+          path: dist
+          retention-days: 7
+
+      - name: Coverage
+        run: npm run test:coverage
+        continue-on-error: true
+
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-${{ github.sha }}
+          path: coverage
+          retention-days: 7
+          if-no-files-found: ignore

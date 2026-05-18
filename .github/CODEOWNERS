@@ -1,0 +1,43 @@
+# Auto-requests review from owners when their files are touched.
+# Order matters — last matching pattern wins.
+#
+# Replace @satrajitghosh183 with the GitHub usernames of the actual maintainers.
+# To add an area expert (e.g. for a course's widgets), add a line below.
+
+# ----- Default owners (everything) -----
+*                                @satrajitghosh183
+
+# ----- Infra / build / CI -----
+# Anything that affects how the app builds, deploys, or runs in production
+# requires a maintainer's eyes. Students cannot self-approve infra changes.
+/.github/                        @satrajitghosh183
+/firebase.json                   @satrajitghosh183
+/firestore.rules                 @satrajitghosh183
+/firestore.indexes.json          @satrajitghosh183
+/.firebaserc                     @satrajitghosh183
+/vite.config.js                  @satrajitghosh183
+/eslint.config.js                @satrajitghosh183
+/package.json                    @satrajitghosh183
+/package-lock.json               @satrajitghosh183
+/sw.js                           @satrajitghosh183
+/infra/                          @satrajitghosh183
+
+# ----- Auth + observability + app shell -----
+/src/                            @satrajitghosh183
+/util/ErrorOverlay.js            @satrajitghosh183
+
+# ----- Marketing / public-facing pages -----
+/index.html                      @satrajitghosh183
+/login.html                      @satrajitghosh183
+/app.html                        @satrajitghosh183
+/calibrate.html                  @satrajitghosh183
+/health.html                     @satrajitghosh183
+/knowsy.css                      @satrajitghosh183
+
+# ----- Widget categories -----
+# Add area-specific owners here so the right TA / professor reviews their domain.
+# Examples (uncomment and replace usernames):
+# /modules/bits-and-gates/        @prof-kruger
+# /modules/assembler/             @prof-kruger
+# /modules/rf/                    @prof-striki
+# /modules/quantum-c/             @prof-kumar

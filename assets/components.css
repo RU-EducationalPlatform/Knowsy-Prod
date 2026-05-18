@@ -1,0 +1,542 @@
+/* ==========================================================
+   KNOWSY — shared component library (.comp-*)
+   ----------------------------------------------------------
+   Used by util/components/*.js. Linked transitively by
+   knowsy.css and textbook.css (@import at top of each),
+   so any page loading either gets these styles.
+
+   Theme tokens fall back through:
+     textbook.css palette  →  knowsy.css palette  →  hard default
+   so components look correct on both surfaces.
+   ========================================================== */
+
+:root {
+    --comp-bg:          var(--panel-bg,      var(--paper,    #F2EDE2));
+    --comp-bg-soft:     var(--panel-subtle-bg, var(--paper-2, #EAE3D3));
+    --comp-fg:          var(--app-fg,        var(--ink,      #0E1330));
+    --comp-fg-soft:     color-mix(in srgb, var(--comp-fg) 65%, transparent);
+    --comp-border:      var(--border,        var(--rule,     #C9C0AB));
+    --comp-border-soft: var(--border-soft,   color-mix(in srgb, var(--comp-border) 55%, transparent));
+    --comp-accent:      var(--accent,        var(--acid,     #C8102E));
+    --comp-accent-hover: var(--accent-hover, var(--acid-deep, #8E0A20));
+    --comp-accent-fg:   #fff;
+    --comp-radius:      6px;
+    --comp-radius-lg:   10px;
+    --comp-font:        inherit;
+    --comp-font-mono:   var(--mono, "JetBrains Mono", ui-monospace, Menlo, monospace);
+    --comp-shadow:      0 1px 2px rgba(0,0,0,0.04), 0 6px 18px rgba(0,0,0,0.08);
+    --comp-shadow-lg:   0 8px 28px rgba(0,0,0,0.18);
+    --comp-gap:         8px;
+    --comp-pad:         8px;
+    --comp-success:     #16794a;
+    --comp-warn:        #b8741f;
+    --comp-danger:      var(--comp-accent);
+    --comp-info:        #2c6cb0;
+}
+
+/* ----------------------------------------------------------
+   Toolbar  —  label/control rows above a canvas or grid
+   ---------------------------------------------------------- */
+.comp-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--comp-gap);
+    padding: var(--comp-pad) calc(var(--comp-pad) * 1.5);
+    background: var(--comp-bg);
+    border: 1px solid var(--comp-border);
+    border-radius: var(--comp-radius);
+    font: var(--comp-font);
+    color: var(--comp-fg);
+}
+.comp-toolbar--inline { border: none; background: transparent; padding: 0; }
+.comp-toolbar--dense { gap: 4px; padding: 4px 6px; }
+
+.comp-toolbar__group {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+.comp-toolbar__label {
+    font-weight: 600;
+    color: var(--comp-fg-soft);
+    font-size: 0.85em;
+    white-space: nowrap;
+}
+.comp-toolbar__spacer { flex: 1 1 auto; }
+.comp-toolbar__sep {
+    width: 1px;
+    align-self: stretch;
+    background: var(--comp-border-soft);
+    margin: 2px 4px;
+}
+
+.comp-toolbar select,
+.comp-toolbar input[type="text"],
+.comp-toolbar input[type="number"] {
+    padding: 5px 8px;
+    border-radius: 4px;
+    border: 1px solid var(--comp-border);
+    background: var(--comp-bg);
+    color: var(--comp-fg);
+    font: inherit;
+    min-width: 80px;
+}
+.comp-toolbar select:focus-visible,
+.comp-toolbar input:focus-visible {
+    outline: 2px solid var(--comp-accent);
+    outline-offset: 1px;
+}
+
+/* ----------------------------------------------------------
+   Button  —  shared button styling for toolbars + modals
+   ---------------------------------------------------------- */
+.comp-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 4px;
+    border: 1px solid var(--comp-border);
+    background: var(--comp-bg);
+    color: var(--comp-fg);
+    font: inherit;
+    font-weight: 500;
+    cursor: pointer;
+    line-height: 1.2;
+    transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+.comp-btn:hover:not([disabled]) { background: var(--comp-bg-soft); }
+.comp-btn:active:not([disabled]) { transform: translateY(1px); }
+.comp-btn[disabled] { opacity: 0.5; cursor: not-allowed; }
+.comp-btn:focus-visible { outline: 2px solid var(--comp-accent); outline-offset: 2px; }
+
+.comp-btn--primary {
+    background: var(--comp-accent);
+    color: var(--comp-accent-fg);
+    border-color: var(--comp-accent);
+}
+.comp-btn--primary:hover:not([disabled]) {
+    background: var(--comp-accent-hover);
+    border-color: var(--comp-accent-hover);
+}
+.comp-btn--ghost {
+    background: transparent;
+    border-color: transparent;
+    color: var(--comp-fg-soft);
+}
+.comp-btn--ghost:hover:not([disabled]) {
+    background: var(--comp-bg-soft);
+    color: var(--comp-fg);
+}
+.comp-btn--danger { color: var(--comp-danger); border-color: var(--comp-danger); }
+.comp-btn--danger:hover:not([disabled]) {
+    background: var(--comp-danger);
+    color: #fff;
+}
+.comp-btn[aria-pressed="true"] {
+    background: var(--comp-accent);
+    color: var(--comp-accent-fg);
+    border-color: var(--comp-accent);
+}
+
+/* ----------------------------------------------------------
+   Modal / dialog
+   ---------------------------------------------------------- */
+.comp-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(14, 19, 48, 0.45);
+    backdrop-filter: blur(2px);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    opacity: 0;
+    transition: opacity 160ms ease;
+}
+.comp-modal-backdrop[data-state="open"] { opacity: 1; }
+
+.comp-modal {
+    background: var(--comp-bg);
+    color: var(--comp-fg);
+    border: 1px solid var(--comp-border);
+    border-radius: var(--comp-radius-lg);
+    box-shadow: var(--comp-shadow-lg);
+    max-width: min(560px, 100%);
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    transform: translateY(8px) scale(0.98);
+    transition: transform 180ms ease;
+}
+.comp-modal-backdrop[data-state="open"] .comp-modal {
+    transform: translateY(0) scale(1);
+}
+.comp-modal--sm { max-width: 360px; }
+.comp-modal--md { max-width: 560px; }
+.comp-modal--lg { max-width: 880px; }
+.comp-modal--xl { max-width: min(1200px, 95vw); }
+
+.comp-modal__head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--comp-border-soft);
+}
+.comp-modal__title {
+    font-size: 1.05rem;
+    font-weight: 600;
+    margin: 0;
+    flex: 1 1 auto;
+    color: var(--comp-fg);
+}
+.comp-modal__close {
+    appearance: none;
+    background: none;
+    border: none;
+    color: var(--comp-fg-soft);
+    cursor: pointer;
+    font-size: 22px;
+    line-height: 1;
+    padding: 0 4px;
+    border-radius: 4px;
+}
+.comp-modal__close:hover { color: var(--comp-fg); background: var(--comp-bg-soft); }
+.comp-modal__close:focus-visible { outline: 2px solid var(--comp-accent); outline-offset: 2px; }
+
+.comp-modal__body {
+    padding: 18px;
+    overflow: auto;
+    flex: 1 1 auto;
+    line-height: 1.5;
+}
+.comp-modal__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 12px 18px;
+    border-top: 1px solid var(--comp-border-soft);
+}
+
+/* ----------------------------------------------------------
+   SplitLayout  —  responsive sidebar + main
+   ---------------------------------------------------------- */
+.comp-split {
+    display: grid;
+    grid-template-columns: var(--comp-split-sidebar, minmax(260px, 330px)) 1fr;
+    gap: var(--comp-split-gap, 16px);
+    align-items: stretch;
+    min-height: 0;
+}
+.comp-split--right { grid-template-columns: 1fr var(--comp-split-sidebar, minmax(260px, 330px)); }
+.comp-split--right > .comp-split__sidebar { order: 2; }
+
+.comp-split__sidebar,
+.comp-split__main {
+    min-width: 0;
+    min-height: 0;
+}
+.comp-split__sidebar {
+    background: var(--comp-bg-soft);
+    border: 1px solid var(--comp-border);
+    border-radius: var(--comp-radius);
+    padding: 12px;
+    overflow: auto;
+}
+.comp-split__main {
+    background: var(--comp-bg);
+    border: 1px solid var(--comp-border);
+    border-radius: var(--comp-radius);
+    padding: 12px;
+    overflow: auto;
+}
+.comp-split--bare > .comp-split__sidebar,
+.comp-split--bare > .comp-split__main {
+    background: transparent;
+    border: none;
+    padding: 0;
+}
+
+@media (max-width: 900px) {
+    .comp-split,
+    .comp-split--right {
+        grid-template-columns: 1fr;
+    }
+    .comp-split--right > .comp-split__sidebar { order: 0; }
+}
+
+/* ----------------------------------------------------------
+   TabPanel
+   ---------------------------------------------------------- */
+.comp-tabs { display: flex; flex-direction: column; min-height: 0; }
+.comp-tabs__list {
+    display: flex;
+    gap: 2px;
+    border-bottom: 1px solid var(--comp-border);
+    padding: 0 4px;
+    overflow-x: auto;
+    scrollbar-width: thin;
+}
+.comp-tabs__tab {
+    appearance: none;
+    background: none;
+    border: none;
+    color: var(--comp-fg-soft);
+    padding: 8px 14px;
+    font: inherit;
+    font-weight: 500;
+    cursor: pointer;
+    border-radius: var(--comp-radius) var(--comp-radius) 0 0;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    white-space: nowrap;
+    transition: color 120ms ease, border-color 120ms ease, background 120ms ease;
+}
+.comp-tabs__tab:hover { color: var(--comp-fg); background: var(--comp-bg-soft); }
+.comp-tabs__tab[aria-selected="true"] {
+    color: var(--comp-accent);
+    border-bottom-color: var(--comp-accent);
+}
+.comp-tabs__tab:focus-visible {
+    outline: 2px solid var(--comp-accent);
+    outline-offset: -2px;
+}
+.comp-tabs__panel {
+    padding: 12px 0;
+    min-height: 0;
+    flex: 1 1 auto;
+    overflow: auto;
+}
+.comp-tabs__panel[hidden] { display: none; }
+
+/* ----------------------------------------------------------
+   RangeControl  —  bound slider + numeric input
+   ---------------------------------------------------------- */
+.comp-range {
+    display: grid;
+    grid-template-columns: minmax(80px, 1fr) 2fr auto;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 0;
+}
+.comp-range__label {
+    font-weight: 500;
+    color: var(--comp-fg);
+    font-size: 0.9em;
+}
+.comp-range__slider {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 4px;
+    background: var(--comp-border);
+    border-radius: 2px;
+    outline: none;
+    min-width: 80px;
+}
+.comp-range__slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    background: var(--comp-accent);
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid var(--comp-bg);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+.comp-range__slider::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    background: var(--comp-accent);
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid var(--comp-bg);
+}
+.comp-range__slider:focus-visible {
+    outline: 2px solid var(--comp-accent);
+    outline-offset: 4px;
+}
+.comp-range__readout {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    min-width: 6ch;
+    justify-content: flex-end;
+    font-family: var(--comp-font-mono);
+    font-size: 0.85em;
+    color: var(--comp-fg);
+}
+.comp-range__readout input {
+    width: 5ch;
+    border: 1px solid var(--comp-border);
+    background: var(--comp-bg);
+    color: var(--comp-fg);
+    border-radius: 4px;
+    padding: 2px 4px;
+    font: inherit;
+    text-align: right;
+    -moz-appearance: textfield;
+}
+.comp-range__readout input::-webkit-outer-spin-button,
+.comp-range__readout input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.comp-range__unit { color: var(--comp-fg-soft); }
+.comp-range__value { font-family: var(--comp-font-mono); font-size: 0.9em; }
+.comp-range__hint {
+    grid-column: 1 / -1;
+    font-size: 0.78em;
+    color: var(--comp-fg-soft);
+    margin-top: -2px;
+    line-height: 1.4;
+}
+.comp-range--stacked { display: block; padding: 8px 0; }
+.comp-range--stacked .comp-range__head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 4px;
+}
+.comp-range--stacked .comp-range__slider { width: 100%; display: block; }
+.comp-range--stacked .comp-range__hint { margin-top: 4px; }
+
+/* ----------------------------------------------------------
+   Badge / status pill
+   ---------------------------------------------------------- */
+.comp-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 0.75em;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    line-height: 1.4;
+    background: var(--comp-bg-soft);
+    color: var(--comp-fg);
+    border: 1px solid var(--comp-border);
+    white-space: nowrap;
+}
+.comp-badge--success { background: color-mix(in srgb, var(--comp-success) 14%, transparent); color: var(--comp-success); border-color: color-mix(in srgb, var(--comp-success) 35%, transparent); }
+.comp-badge--warn    { background: color-mix(in srgb, var(--comp-warn) 14%, transparent);    color: var(--comp-warn);    border-color: color-mix(in srgb, var(--comp-warn) 35%, transparent); }
+.comp-badge--danger  { background: color-mix(in srgb, var(--comp-danger) 14%, transparent);  color: var(--comp-danger);  border-color: color-mix(in srgb, var(--comp-danger) 35%, transparent); }
+.comp-badge--info    { background: color-mix(in srgb, var(--comp-info) 14%, transparent);    color: var(--comp-info);    border-color: color-mix(in srgb, var(--comp-info) 35%, transparent); }
+.comp-badge--accent  { background: var(--comp-accent); color: var(--comp-accent-fg); border-color: var(--comp-accent); }
+
+/* ----------------------------------------------------------
+   SelectableTable
+   ---------------------------------------------------------- */
+.comp-table {
+    width: 100%;
+    border-collapse: collapse;
+    font: inherit;
+    color: var(--comp-fg);
+}
+.comp-table thead th {
+    text-align: left;
+    font-weight: 600;
+    padding: 8px 10px;
+    border-bottom: 2px solid var(--comp-border);
+    color: var(--comp-fg-soft);
+    font-size: 0.85em;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    background: var(--comp-bg-soft);
+    position: sticky;
+    top: 0;
+}
+.comp-table thead th.comp-table__sortable { cursor: pointer; user-select: none; }
+.comp-table thead th.comp-table__sortable:hover { background: var(--comp-border-soft); }
+.comp-table thead th .comp-table__sort-arrow { color: var(--comp-accent); margin-left: 4px; }
+.comp-table tbody td {
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--comp-border-soft);
+}
+.comp-table tbody tr { cursor: pointer; transition: background 100ms ease; }
+.comp-table tbody tr:hover { background: var(--comp-bg-soft); }
+.comp-table tbody tr[aria-selected="true"] { background: color-mix(in srgb, var(--comp-accent) 12%, transparent); }
+.comp-table tbody tr[aria-selected="true"] td { color: var(--comp-fg); }
+.comp-table td[data-align="right"], .comp-table th[data-align="right"] { text-align: right; }
+.comp-table td[data-align="center"], .comp-table th[data-align="center"] { text-align: center; }
+
+/* ----------------------------------------------------------
+   Checkbox  —  styled checkbox wrapper
+   ---------------------------------------------------------- */
+.comp-check {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    user-select: none;
+    color: var(--comp-fg);
+    font: inherit;
+}
+.comp-check input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    border: 1.5px solid var(--comp-border);
+    border-radius: 3px;
+    background: var(--comp-bg);
+    cursor: pointer;
+    display: grid;
+    place-content: center;
+    transition: background 120ms ease, border-color 120ms ease;
+}
+.comp-check input[type="checkbox"]::before {
+    content: "";
+    width: 9px;
+    height: 9px;
+    transform: scale(0);
+    transform-origin: center;
+    transition: transform 120ms ease;
+    background: var(--comp-accent-fg);
+    clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+}
+.comp-check input[type="checkbox"]:checked {
+    background: var(--comp-accent);
+    border-color: var(--comp-accent);
+}
+.comp-check input[type="checkbox"]:checked::before { transform: scale(1); }
+.comp-check input[type="checkbox"]:focus-visible {
+    outline: 2px solid var(--comp-accent);
+    outline-offset: 2px;
+}
+.comp-check input[type="checkbox"][disabled] { opacity: 0.5; cursor: not-allowed; }
+.comp-check__label { line-height: 1.3; }
+
+/* ----------------------------------------------------------
+   Tooltip
+   ---------------------------------------------------------- */
+.comp-tip {
+    position: absolute;
+    z-index: 2000;
+    background: var(--comp-fg);
+    color: var(--comp-bg);
+    padding: 5px 9px;
+    border-radius: 4px;
+    font-size: 0.8em;
+    line-height: 1.3;
+    pointer-events: none;
+    box-shadow: var(--comp-shadow);
+    max-width: 240px;
+    opacity: 0;
+    transition: opacity 120ms ease;
+}
+.comp-tip[data-state="open"] { opacity: 1; }
+.comp-tip::after {
+    content: "";
+    position: absolute;
+    width: 0; height: 0;
+    border: 5px solid transparent;
+}
+.comp-tip[data-placement="top"]::after {
+    bottom: -10px; left: 50%; transform: translateX(-50%);
+    border-top-color: var(--comp-fg);
+}
+.comp-tip[data-placement="bottom"]::after {
+    top: -10px; left: 50%; transform: translateX(-50%);
+    border-bottom-color: var(--comp-fg);
+}

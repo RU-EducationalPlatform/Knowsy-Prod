@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Knowsy — your workbench</title>
+<link rel="stylesheet" href="./assets/knowsy.css" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="page" data-screen-label="Catalog">
+
+  <!-- The persistent in-app navbar mounts here at runtime — see src/Navbar.js. -->
+
+  <!-- ============ HERO ============ -->
+  <section class="catalog-hero">
+    <div class="hero-eyebrow">
+      <span class="dot" aria-hidden="true"></span>
+      <span class="eyebrow">No. 014 — Spring Semester, 2026</span>
+    </div>
+    <h1 class="catalog-hero-title">
+      Welcome back,<br/><em class="italic serif" id="catalog-user-name">curious one.</em>
+    </h1>
+    <p class="catalog-hero-sub">
+      Pick a workbench. Run it, break it, rebuild it.
+      <span class="catalog-count" id="catalog-count"></span>
+    </p>
+  </section>
+
+  <!-- ============ CATALOG ============ -->
+  <main id="catalog" class="catalog">
+    <p class="catalog-empty" id="catalog-empty" hidden>Nothing here yet.</p>
+  </main>
+
+</div>
+
+<!-- Calibration gate modal — hidden by default, shown when a widget needs calibration -->
+<div class="gate" id="gate" hidden role="dialog" aria-modal="true" aria-labelledby="gate-title">
+  <div class="gate-card">
+    <div class="eyebrow">— One moment</div>
+    <h2 id="gate-title">Before you start, <em>let's calibrate.</em></h2>
+    <p class="gate-lead">
+      Knowsy uses color to convey information — circuit diagrams, highlighted code, charts, simulator overlays.
+      A 60-second color-vision check makes sure everything renders the way you'll actually see it.
+    </p>
+    <div class="gate-actions">
+      <button type="button" class="btn btn-acid" id="gate-take">Take the test <span class="arrow">→</span></button>
+      <button type="button" class="btn btn-ghost" id="gate-skip">Skip for now</button>
+    </div>
+    <p class="gate-foot">You can re-take it later from any widget's settings.</p>
+  </div>
+</div>
+
+<script type="module" src="./src/app.js"></script>
+
+</body>
+</html>

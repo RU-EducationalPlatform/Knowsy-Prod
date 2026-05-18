@@ -1,0 +1,69 @@
+name: Deploy → Production
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+# Only one prod deploy at a time; cancel older runs if a newer push comes in.
+concurrency:
+  group: deploy-prod
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: production
+      url: ${{ steps.deploy.outputs.details_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - run: npm ci
+
+      - name: Build
+        run: npm run build
+        env:
+          VITE_ENVIRONMENT: production
+          VITE_APP_VERSION: ${{ github.sha }}
+          VITE_SENTRY_DSN: ${{ secrets.VITE_SENTRY_DSN }}
+          VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
+          VITE_FIREBASE_AUTH_DOMAIN: ${{ secrets.VITE_FIREBASE_AUTH_DOMAIN }}
+          VITE_FIREBASE_PROJECT_ID: ${{ secrets.VITE_FIREBASE_PROJECT_ID }}
+          VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
+          VITE_FIREBASE_STORAGE_BUCKET: ${{ secrets.VITE_FIREBASE_STORAGE_BUCKET }}
+          VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.VITE_FIREBASE_MESSAGING_SENDER_ID }}
+
+      # Skip the actual deploy until the Firebase secrets are configured.
+      # When you're ready, add FIREBASE_SERVICE_ACCOUNT_PROD and
+      # FIREBASE_PROJECT_ID_PROD in repo Settings → Secrets → Actions and the
+      # gate flips itself on. No workflow edits needed.
+      - name: Check deploy secrets
+        id: check
+        shell: bash
+        env:
+          SA: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_PROD }}
+          PID: ${{ secrets.FIREBASE_PROJECT_ID_PROD }}
+        run: |
+          if [ -n "$SA" ] && [ -n "$PID" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::warning title=Firebase deploy skipped::Set FIREBASE_SERVICE_ACCOUNT_PROD and FIREBASE_PROJECT_ID_PROD in repo Secrets to enable production deploys."
+          fi
+
+      - name: Deploy to Firebase Hosting (live)
+        if: steps.check.outputs.ready == 'true'
+        id: deploy
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_PROD }}
+          projectId: ${{ secrets.FIREBASE_PROJECT_ID_PROD }}
+          channelId: live

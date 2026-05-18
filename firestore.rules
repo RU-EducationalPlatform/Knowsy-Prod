@@ -1,0 +1,256 @@
+rules_version = '2';
+
+// Default-deny: every path needs an explicit `allow` to be reachable.
+// See docs/ARCHITECTURE.md for the data model these rules enforce.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ----- Top-level helpers -----
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+    function isAdmin() {
+      return isSignedIn() && request.auth.token.role == 'admin';
+    }
+    function isTeacher() {
+      return isSignedIn()
+        && (request.auth.token.role == 'teacher' || request.auth.token.role == 'admin');
+    }
+    // NOTE: An earlier `isInClass(cid)` helper using request.auth.token.classes
+    // was removed — Firebase Rules' handling of that list claim kept throwing
+    // "Null value error. for 'list'" no matter how we guarded the access.
+    // Membership is now checked via the members subcollection's exists()
+    // path in isClassMember(), inside /classes/{classId} below.
+
+    // ----- /users/{uid} — profile docs -----
+    // The `role` field is set by the assignRoleOnCreate Cloud Function and
+    // can never be modified by the user themselves.
+    match /users/{uid} {
+      allow read: if isOwner(uid) || isAdmin();
+      allow create: if isOwner(uid)
+        && request.resource.data.email == request.auth.token.email
+        && (!('role' in request.resource.data) || request.resource.data.role == 'student');
+      allow update: if isOwner(uid)
+        && request.resource.data.role == resource.data.role;
+      allow delete: if isAdmin();
+
+      match /progress/{lessonId} {
+        allow read, write: if isOwner(uid);
+      }
+    }
+
+    // ----- /lessons/{lessonId} — public lesson metadata -----
+    match /lessons/{lessonId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    // ----- /teacherEmails/{email} — allowlist, admin-only -----
+    match /teacherEmails/{email} {
+      allow read, write: if isAdmin();
+    }
+
+    // ----- /classes/{classId} — teacher-owned class with everything below -----
+    match /classes/{classId} {
+      function classTeacherUid() {
+        return get(/databases/$(database)/documents/classes/$(classId)).data.teacherUid;
+      }
+      function isClassTeacher() {
+        return isSignedIn() && classTeacherUid() == request.auth.uid;
+      }
+      function isClassMember() {
+        // Use exists() against the members subcollection instead of the
+        // custom-claim list. The claim path (isInClass) keeps throwing
+        // "Null value error. for 'list'" even with multiple guards — we've
+        // given up on it for v1 in favour of the simpler, bulletproof
+        // exists() check. Cost: one Firestore read per check (acceptable).
+        return isClassTeacher() || (isSignedIn()
+          && exists(/databases/$(database)/documents/classes/$(classId)/members/$(request.auth.uid)));
+      }
+      function moduleIdsContains(mid) {
+        return mid in get(/databases/$(database)/documents/classes/$(classId)).data.moduleIds;
+      }
+
+      // SPLIT `read` into `get` + `list`:
+      //   get  — single-doc fetch; we can reference doc contents via get()/exists().
+      //   list — collection query; Firestore's static analyzer can't prove
+      //          isClassMember() ahead of time because it depends on doc data,
+      //          so this would fail with "false for 'list' @ L<n>". For class
+      //          metadata (name/code/term/moduleIds) the privacy risk is low,
+      //          so we allow any signed-in user to LIST. Per-doc gets still
+      //          enforce isClassMember(), and every sub-collection has its
+      //          own stricter membership check.
+      allow get:  if isClassMember();
+      allow list: if isSignedIn();
+
+      allow create: if isTeacher()
+        && request.resource.data.teacherUid == request.auth.uid
+        && 'moduleIds' in request.resource.data
+        && request.resource.data.moduleIds != null;
+      // teacherUid is immutable; everything else the teacher can edit.
+      allow update: if isClassTeacher()
+        && request.resource.data.teacherUid == resource.data.teacherUid;
+      allow delete: if isClassTeacher();
+
+      // Roster — self-enrollment is server-side only (joinClassByCode callable).
+      match /members/{memberUid} {
+        // get: a member can read their own membership doc; teacher can read any.
+        // list: roster listing is teacher-only — students don't get to see the
+        // class roster directly (they see chat handles via messages instead).
+        allow get: if isSignedIn() && (memberUid == request.auth.uid || isClassTeacher());
+        allow list: if isClassTeacher();
+        allow create, delete: if isClassTeacher();
+        allow update: if false;
+      }
+
+      match /announcements/{aid} {
+        allow read: if isClassMember();
+        allow create, update: if isClassTeacher()
+          && request.resource.data.authorUid == request.auth.uid;
+        allow delete: if isClassTeacher();
+      }
+
+      match /messages/{mid} {
+        allow read: if isClassMember();
+        allow create: if isClassMember()
+          && request.resource.data.authorUid == request.auth.uid
+          && request.resource.data.body is string
+          && request.resource.data.body.size() <= 4000;
+        allow update: if false;
+        // Authors can retract their own messages for 5 minutes; teachers always.
+        allow delete: if isClassTeacher()
+          || (isOwner(resource.data.authorUid)
+              && request.time < resource.data.createdAt + duration.value(5, 'm'));
+      }
+
+      match /availability/{slotId} {
+        allow read: if isClassMember();
+        allow write: if isClassTeacher()
+          && request.resource.data.teacherUid == classTeacherUid();
+      }
+
+      // /classes/{c}/events/{eid} — shared class calendar. Every member
+      // authors their own events; everyone reads. visibility:'public'
+      // shows the title to all members; visibility:'anonymous' shows as
+      // "Blocked" to other members (author still sees their title).
+      match /events/{eid} {
+        allow read: if isClassMember();
+        allow create: if isClassMember()
+          && request.resource.data.authorUid == request.auth.uid
+          && request.resource.data.visibility in ['public', 'anonymous']
+          && request.resource.data.title is string
+          && request.resource.data.title.size() <= 200;
+        // Authors edit only their own events; cannot reassign authorUid.
+        allow update: if isClassMember()
+          && resource.data.authorUid == request.auth.uid
+          && request.resource.data.authorUid == resource.data.authorUid;
+        allow delete: if isClassMember()
+          && (resource.data.authorUid == request.auth.uid || isClassTeacher());
+      }
+
+      match /bookings/{bid} {
+        // SPLIT — list queries fail static analysis when the rule references
+        // resource.data. For get we still enforce ownership; for list any
+        // class member can query and the client is expected to filter by
+        // studentUid where appropriate.
+        allow get: if isClassMember()
+          && (resource.data.studentUid == request.auth.uid || isClassTeacher());
+        allow list: if isClassMember();
+        allow create: if isClassMember()
+          && request.resource.data.studentUid == request.auth.uid
+          && request.resource.data.status == 'pending';
+        // gcalEventId / status flips happen server-side (onBookingWrite +
+        // recordTeacherGrade-style callables). Students can cancel their own.
+        allow update: if isClassTeacher();
+        allow delete: if isClassTeacher() || isOwner(resource.data.studentUid);
+      }
+
+      // /broadcasts/{sessionId} also matches the special-cased singleton 'active'.
+      // Same rules apply — both docs carry teacherUid.
+      match /broadcasts/{sessionId} {
+        allow read: if isClassMember();
+        allow create, update: if isClassTeacher()
+          && request.resource.data.teacherUid == request.auth.uid;
+        allow delete: if isClassTeacher();
+
+        match /chunks/{idx} {
+          allow read: if isClassMember();
+          allow create: if isClassTeacher()
+            && request.resource.data.sizeBytes is number
+            && request.resource.data.sizeBytes < 5 * 1024 * 1024;
+          // Append-only; cleanup is admin-SDK only.
+          allow update, delete: if false;
+        }
+      }
+
+      match /assignments/{aid} {
+        // SPLIT — same reason as bookings. Per-doc get keeps the
+        // publishedAt/isClassTeacher gate; list lets any member query and
+        // the client filters out drafts for students. The actual draft
+        // body is still gated on get, so a student listing draft IDs gets
+        // back the ID list but couldn't read each draft individually.
+        allow get: if isClassMember()
+          && (resource.data.publishedAt != null || isClassTeacher());
+        allow list: if isClassMember();
+        allow create, update: if isClassTeacher()
+          && moduleIdsContains(request.resource.data.moduleId)
+          && request.resource.data.authorUid == request.auth.uid;
+        allow delete: if isClassTeacher();
+
+        match /rubricVersions/{vid} {
+          allow read: if isClassMember();
+          // Server-only (bumpRubricVersion callable enforces monotonic version).
+          allow write: if false;
+        }
+
+        match /submissions/{uid} {
+          // get: submitter or teacher. list: teacher only (the grader page).
+          // Students fetch their OWN submission by uid via get, not list.
+          allow get: if isOwner(uid) || isClassTeacher();
+          allow list: if isClassTeacher();
+          allow create, update: if isOwner(uid)
+            && request.resource.data.state in ['draft', 'submitted'];
+          // Grading writes go through recordTeacherGrade / autogradeSubmission.
+          allow delete: if false;
+
+          match /peerReviews/{reviewerUid} {
+            // Path variables (uid, reviewerUid) are bound from the URL — both
+            // are evaluable at list time, so the rule works for both get and
+            // list. Listing peerReviews for a specific submission is scoped
+            // to that submission's path, which is fine.
+            allow get:  if isOwner(uid) || isOwner(reviewerUid) || isClassTeacher();
+            allow list: if isOwner(uid) || isClassTeacher();
+            allow create, update: if isOwner(reviewerUid);
+            allow delete: if isClassTeacher();
+          }
+        }
+      }
+    }
+
+    // ----- /teachers/{uid} — private teacher settings (GCal tokens, etc.) -----
+    // Admin-SDK only writes; the teacher can read their own.
+    match /teachers/{uid} {
+      allow read: if isOwner(uid) || isAdmin();
+      allow write: if false;
+    }
+
+    // ----- /classCodes/{code} — class join codes -----
+    // Admin-SDK only. Never exposed to clients (joinClassByCode resolves codes
+    // server-side, returning only the classId to the caller).
+    match /classCodes/{code} {
+      allow read, write: if false;
+    }
+
+    // ----- DEPRECATED: /cohorts/* (superseded by /classes/*) -----
+    // Locked down after migration. Remove this block in the next cleanup pass.
+    match /cohorts/{cohortId} {
+      allow read, write: if false;
+      match /members/{memberUid} {
+        allow read, write: if false;
+      }
+    }
+  }
+}

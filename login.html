@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Sign in — Knowsy</title>
+<link rel="stylesheet" href="./assets/knowsy.css" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="login-shell" data-screen-label="Login">
+
+  <!-- ============ LEFT — ART ============ -->
+  <aside class="login-art">
+
+    <!-- background constellation -->
+    <div class="login-bg" aria-hidden="true">
+      <svg class="constellation" viewBox="0 0 600 800" preserveAspectRatio="xMidYMid slice">
+        <defs>
+          <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#FF8A8A" stop-opacity=".5"/>
+            <stop offset="100%" stop-color="#FF8A8A" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+
+        <circle cx="300" cy="400" r="220" fill="url(#glow)"/>
+
+        <g transform="translate(300 400)">
+          <circle class="ring" r="180"/>
+          <circle class="ring2" r="240"/>
+          <circle class="ring" r="300"/>
+        </g>
+
+        <!-- stars -->
+        <g>
+          <circle class="dot blink" cx="120" cy="140" r="2"/>
+          <circle class="dot" cx="200" cy="80"  r="1.5"/>
+          <circle class="dot blink" cx="490" cy="180" r="2.5"/>
+          <circle class="dot" cx="540" cy="320" r="1.5"/>
+          <circle class="dot blink" cx="80"  cy="520" r="2"/>
+          <circle class="dot" cx="170" cy="660" r="1.5"/>
+          <circle class="dot blink" cx="430" cy="700" r="2"/>
+          <circle class="dot" cx="540" cy="600" r="1.5"/>
+          <circle class="dot" cx="60"  cy="300" r="1.5"/>
+          <circle class="dot blink" cx="320" cy="60"  r="2"/>
+        </g>
+
+        <!-- connecting lines -->
+        <g stroke="rgba(242,237,226,.18)" stroke-width="1" fill="none">
+          <path d="M 120 140 L 200 80 L 320 60"/>
+          <path d="M 490 180 L 540 320"/>
+          <path d="M 80 520 L 170 660 L 430 700"/>
+        </g>
+      </svg>
+    </div>
+
+    <!-- floating cards -->
+    <div class="float-cards" aria-hidden="true">
+      <div class="fc fc-1"><span class="dotpip"></span> NEW PAGE · TODAY</div>
+      <div class="fc fc-2"><span class="dotpip"></span> RUNNING · IN BROWSER</div>
+      <div class="fc fc-3"><span class="dotpip"></span> STREAK · 12 DAYS</div>
+    </div>
+
+    <!-- top brand -->
+    <div style="position:relative; z-index:2; display:flex; align-items:center; justify-content:space-between;">
+      <a class="brand" href="./index.html">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span class="brand-name">Knowsy</span>
+      </a>
+      <span class="eyebrow" style="color:rgba(242,237,226,.55)">Est. 2026</span>
+    </div>
+
+    <div class="login-pull">
+      Welcome back, <em>curious one.</em>
+      <div class="login-pull-sub">Pick up where the question left off.</div>
+    </div>
+
+    <div class="login-art-foot">
+      <span>Issue 014 / Spring</span>
+      <span>Page 02 — Sign in</span>
+    </div>
+  </aside>
+
+  <!-- ============ RIGHT — FORM ============ -->
+  <main class="login-form-side">
+
+    <div class="login-top">
+      <span data-mode-text="signin">New here?</span>
+      <span data-mode-text="signup" hidden>Already have an account?</span>
+      <a id="mode-switch" href="./login.html?mode=signup">Create an account</a>
+    </div>
+
+    <div class="login-card">
+      <div class="eyebrow" id="eyebrow">— Sign in</div>
+      <h1>
+        <span data-mode-text="signin">Hello,</span>
+        <span data-mode-text="signup" hidden>Welcome,</span>
+        <em>
+          <span data-mode-text="signin">again.</span>
+          <span data-mode-text="signup" hidden>new friend.</span>
+          <svg viewBox="0 0 240 14" preserveAspectRatio="none">
+            <path d="M2 9 C 40 2, 90 14, 140 6 S 220 10, 238 5"/>
+          </svg>
+        </em>
+      </h1>
+      <p class="lead" data-mode-text="signin">Sign in to keep your streak, your cohort, and your unfinished thoughts.</p>
+      <p class="lead" data-mode-text="signup" hidden>Make an account to start asking questions out loud.</p>
+
+      <div class="oauth-row">
+        <button type="button" class="oauth" data-provider="google" aria-label="Continue with Google">
+          <svg viewBox="0 0 48 48" fill="none">
+            <path d="M44.5 20H24v8.5h11.8C34.7 33 30 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3 0 5.7 1.1 7.8 2.9l6-6C34.4 6 29.5 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.4-.1-2.7-.4-4z" fill="currentColor"/>
+          </svg>
+          Google
+        </button>
+        <button type="button" class="oauth" data-provider="apple" aria-label="Continue with Apple">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M16.4 12.7c0-2.3 1.9-3.4 2-3.5-1.1-1.6-2.7-1.8-3.3-1.8-1.4-.1-2.7.8-3.4.8-.7 0-1.8-.8-3-.8-1.5 0-2.9.9-3.7 2.3-1.6 2.7-.4 6.7 1.1 8.9.7 1.1 1.6 2.3 2.8 2.2 1.1 0 1.6-.7 2.9-.7s1.7.7 3 .7c1.2 0 2-1.1 2.8-2.2.9-1.3 1.2-2.5 1.3-2.6-.1 0-2.5-1-2.5-3.3zM14.3 5.5c.6-.7 1-1.7.9-2.7-.9 0-2 .6-2.6 1.3-.6.7-1.1 1.7-.9 2.7 1 .1 2-.5 2.6-1.3z"/>
+          </svg>
+          Apple
+        </button>
+        <button type="button" class="oauth" data-provider="rutgers" aria-label="Continue with Rutgers">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M3 10 L12 4 L21 10 L12 16 Z"/>
+            <path d="M6 12 V18 C 6 19, 18 19, 18 18 V12"/>
+          </svg>
+          Rutgers
+        </button>
+      </div>
+
+      <div class="divider"><span>or with email</span></div>
+
+      <form id="login-form" novalidate>
+        <div class="field">
+          <input id="email" name="email" type="email" placeholder=" " autocomplete="email" required />
+          <label for="email">Email or username</label>
+        </div>
+
+        <div class="field">
+          <input id="password" name="password" type="password" placeholder=" " autocomplete="current-password" required minlength="6" />
+          <label for="password">Password</label>
+          <span class="toggle-pw" data-toggle>Show</span>
+        </div>
+
+        <div class="row-between">
+          <label class="checkbox">
+            <input type="checkbox" id="keep-signed-in" />
+            <span class="box" aria-hidden="true"></span>
+            <span>Keep me signed in</span>
+          </label>
+          <a href="#" id="forgot-link">Forgot it?</a>
+        </div>
+
+        <button class="submit" type="submit">
+          <span class="submit-label">Continue</span> <span class="arrow">→</span>
+        </button>
+
+        <p id="auth-status" class="auth-status" role="status" aria-live="polite" hidden></p>
+
+        <div class="alt-row">
+          Teacher or school admin? <a href="#" id="staff-door">Use the staff door</a>
+        </div>
+      </form>
+    </div>
+
+    <div class="login-foot">
+      <span>© 2026 Knowsy Co-op</span>
+      <span>Privacy · Terms · Cookies</span>
+    </div>
+  </main>
+</div>
+
+<script type="module" src="./src/login.js"></script>
+
+</body>
+</html>

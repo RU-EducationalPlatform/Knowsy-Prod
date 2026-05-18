@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Knowsy — color vision check</title>
+<link rel="stylesheet" href="./assets/knowsy.css" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="page" data-screen-label="Calibrate">
+
+  <!-- The persistent in-app navbar mounts here at runtime — see src/Navbar.js. -->
+
+  <section class="catalog-hero">
+    <div class="hero-eyebrow">
+      <span class="dot" aria-hidden="true"></span>
+      <span class="eyebrow">Color vision check · ~60 seconds</span>
+    </div>
+    <h1 class="catalog-hero-title">
+      A quick <em class="italic serif">calibration.</em>
+    </h1>
+    <p class="catalog-hero-sub">
+      Read each plate. Type the digit you see (or leave blank if you can't). Knowsy uses the result so charts,
+      circuits, and code highlights stay legible for you. Nothing is shared.
+    </p>
+  </section>
+
+  <main class="calibrate-shell">
+    <div id="colorblind-test-mount" class="calibrate-mount" aria-busy="true"></div>
+
+    <div class="calibrate-actions">
+      <button type="button" class="btn btn-acid" id="continue-btn">I'm done — continue <span class="arrow">→</span></button>
+      <button type="button" class="btn btn-ghost" id="skip-btn">Skip — I'll calibrate later</button>
+    </div>
+    <p class="calibrate-foot eyebrow">Your answers stay on this device. You can re-take the test any time.</p>
+  </main>
+
+</div>
+
+<script type="module" src="./src/calibrate.js"></script>
+
+</body>
+</html>

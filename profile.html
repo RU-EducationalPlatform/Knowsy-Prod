@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Profile — Knowsy</title>
+<link rel="stylesheet" href="./assets/knowsy.css" />
+<link rel="stylesheet" href="./assets/profile.css" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<!-- Persistent in-app navbar mounts here at runtime — see src/profile.js. -->
+
+<div class="pf-page" data-screen-label="Profile">
+  <section class="pf-hero">
+    <!-- avatar — flippable paper tile (animated front / photo back) -->
+    <div class="pf-avatar" id="avatar">
+      <div class="av-flip">
+        <!-- FRONT: monogram + animated constellation tile -->
+        <div class="av-face av-front">
+          <div class="av-top"><span>— student no. 1428</span><span class="dot"></span></div>
+          <div class="mono">
+            <div class="letter" id="avMono">A<em>.</em></div>
+            <canvas class="av-anim" id="avAnim" width="560" height="500" aria-hidden="true"></canvas>
+          </div>
+          <div class="av-bot"><span class="dot"></span><span>knowsy · ’28</span></div>
+          <div class="av-tools">
+            <button class="av-tool flip" data-act="flip">Flip →</button>
+          </div>
+        </div>
+        <!-- BACK: portrait frame -->
+        <div class="av-face av-back">
+          <div class="av-top"><span>— portrait</span><span class="dot"></span></div>
+          <div class="photo-wrap">
+            <div class="photo-mat" id="avPhotoMat">
+              <img class="photo-img" id="avPhotoImg" alt="" hidden />
+              <label class="photo-empty" id="avPhotoEmpty" for="avPhotoInput">
+                <span class="ico">+</span>
+                <span>Drop a photo here<br/>or click to upload</span>
+              </label>
+              <input class="photo-input" type="file" id="avPhotoInput" accept="image/*" />
+            </div>
+          </div>
+          <div class="av-bot"><span class="dot"></span><span>portrait · ’28</span></div>
+          <div class="av-tools">
+            <button class="av-tool" data-act="upload">Upload</button>
+            <button class="av-tool" data-act="remove">Remove</button>
+            <button class="av-tool flip" data-act="flip">← Flip</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pf-id">
+      <div class="greeting"><span class="dot"></span>Spring Semester · Class of ’28</div>
+      <h1>Hi, I'm <span contenteditable="true" id="userName" spellcheck="false">Ada</span><br/><em>the curious</em>.</h1>
+      <p class="bio" contenteditable="true" id="userBio" spellcheck="false">A 9th-grader who's better at asking questions than answering them. Currently obsessed with how computers actually <em>see</em> a number, and writing tiny machines in Rust on weekends.</p>
+      <div class="id-meta">
+        <button class="pf-chip is-on"><span class="swatch"></span>Numbers track</button>
+        <button class="pf-chip">Compilers</button>
+        <button class="pf-chip">Biology</button>
+        <button class="pf-chip">Add interest +</button>
+      </div>
+    </div>
+
+    <div class="pf-mood">
+      <div class="head">
+        <span class="label">Today I feel</span>
+        <span class="stamp" id="moodStamp">just now</span>
+      </div>
+      <div class="read">I'm <em id="moodLabel">curious</em>.</div>
+      <div class="pickers" id="moodPickers"></div>
+      <div class="energy">
+        <div class="energy-row"><span>Energy</span><span><b id="energyVal">68</b>/100</span></div>
+        <div class="slider" id="energySlider"><div class="fill" id="energyFill" style="width:68%"></div><div class="knob" id="energyKnob" style="left:68%"></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ LEDGER ============ -->
+  <section class="pf-ledger" aria-label="Stats">
+    <div class="cell">
+      <div class="lab">Modules</div>
+      <div class="num"><span id="modulesBig">31</span><small>/ 64</small></div>
+      <div class="sub">Numbers, Compilers, Bio</div>
+      <div class="bar"><i id="moduleBarBig" style="width:48%"></i></div>
+    </div>
+    <div class="cell">
+      <div class="lab">Days</div>
+      <div class="num"><span id="daysBig">142</span><small>days</small></div>
+      <div class="sub">since Sept &apos;25</div>
+    </div>
+    <div class="cell">
+      <div class="lab">Streak</div>
+      <div class="num"><em id="streakBig">7</em><small>days</small></div>
+      <div class="sub">Last study · 4h ago</div>
+    </div>
+    <div class="cell">
+      <div class="lab">Total XP</div>
+      <div class="num"><span id="xpBig">820</span><small>/ 1200</small></div>
+      <div class="sub">Level 4 — Apprentice</div>
+      <div class="bar"><i id="xpBarBig" style="width:68%"></i></div>
+    </div>
+  </section>
+
+  <!-- ============ SKILL CONSTELLATION ============ -->
+  <section class="pf-section">
+    <div class="head">
+      <h2>Skill <em>shape.</em><span class="num">No. 01</span></h2>
+      <div class="rule"></div>
+      <div class="meta">drag to rate yourself</div>
+    </div>
+    <div class="pf-skills">
+      <div class="pf-radar" id="radar"></div>
+      <div class="panel">
+        <h3>What you're <em>good</em> at</h3>
+        <div class="panel-sub">Self-reported · live</div>
+        <div class="skill-list" id="skillList"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ACTIVITY HEATMAP ============ -->
+  <section class="pf-section">
+    <div class="head">
+      <h2><em>365</em> days.<span class="num">No. 02</span></h2>
+      <div class="rule"></div>
+      <div class="meta">click a day to log study</div>
+    </div>
+    <div class="pf-heat" id="heat">
+      <div class="grid" id="heatGrid"></div>
+      <div class="legend">
+        Less
+        <span class="sw" style="background:var(--paper-3)"></span>
+        <span class="sw" style="background:rgba(200,16,46,.18)"></span>
+        <span class="sw" style="background:rgba(200,16,46,.36)"></span>
+        <span class="sw" style="background:rgba(200,16,46,.6)"></span>
+        <span class="sw" style="background:var(--acid)"></span>
+        More
+      </div>
+      <div class="tooltip" id="heatTip"></div>
+    </div>
+  </section>
+
+  <!-- ============ ACHIEVEMENT VAULT ============ -->
+  <section class="pf-section" id="achievements">
+    <div class="head">
+      <h2><em>Achievements.</em><span class="num">No. 03</span></h2>
+      <div class="rule"></div>
+      <div class="meta">click to flip · 6/8 unlocked</div>
+    </div>
+    <div class="pf-vault" id="vault"></div>
+  </section>
+
+  <!-- ============ SHOW-YOUR-WORK WALL ============ -->
+  <section class="pf-section">
+    <div class="head">
+      <h2>Pinned <em>thoughts.</em><span class="num">No. 04</span></h2>
+      <div class="rule"></div>
+      <div class="meta">drag to rearrange</div>
+    </div>
+    <div class="pf-wall" id="wall">
+      <span class="wall-help">drag · double-click to edit</span>
+      <div class="pf-wall-add">
+        <button id="addNoteBtn">+ Add note</button>
+        <button id="shuffleBtn">Shuffle</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CLASSES ============ -->
+  <section class="pf-section">
+    <div class="head">
+      <h2>Your <em>classes.</em><span class="num">No. 05</span></h2>
+      <div class="rule"></div>
+      <div class="meta">spring semester · 2026</div>
+    </div>
+    <div class="cls-toolbar">
+      <label class="cls-btn">
+        Upload .ics
+        <input id="clsIcsInput" type="file" accept=".ics,text/calendar" hidden />
+      </label>
+      <button class="cls-btn" id="clsAddBtn" type="button">Add manually</button>
+      <button class="cls-btn cls-btn-ghost" id="clsClearBtn" type="button">Clear all</button>
+      <span class="cls-hint">Drop a WebReg .ics export, or type one in.</span>
+    </div>
+    <div class="pf-cohort" id="classes"></div>
+  </section>
+
+  <!-- ============ ASSIGNMENTS / PROGRESS ============ -->
+  <section class="pf-section">
+    <div class="head">
+      <h2>Work <em>completed.</em><span class="num">No. 06</span></h2>
+      <div class="rule"></div>
+      <div class="meta">all assessments &amp; submissions</div>
+    </div>
+    <div class="pf-progress" id="pfProgress"></div>
+    <div class="pf-completed" id="pfCompletedList"></div>
+  </section>
+
+  <!-- ============ ACCOUNT — IDENTITY, COLOR VISION, ROLE ============ -->
+  <section class="pf-section pf-account-section">
+    <div class="head">
+      <h2><em>Account.</em><span class="num">No. 07</span></h2>
+      <div class="rule"></div>
+      <div class="meta">your record · public/private toggles</div>
+    </div>
+
+    <div class="pf-account">
+      <!-- Color-vision verdict (saved on calibration; jump to /calibrate.html to retake) -->
+      <article class="pf-account-card pf-color-card">
+        <div class="card-eyebrow">— Color vision</div>
+        <div class="card-title" id="cvTitle">Not yet checked</div>
+        <p class="card-body" id="cvBody">Run the screening once and we'll keep the result on file.</p>
+        <div class="card-meta" id="cvMeta"></div>
+        <div class="card-actions">
+          <a class="pf-cta" id="cvLink" href="./calibrate.html?next=/profile.html">Take the test →</a>
+        </div>
+      </article>
+
+      <!-- Identity ledger -->
+      <article class="pf-account-card pf-identity-card">
+        <div class="card-eyebrow">— Identity</div>
+        <div class="pf-id-grid" id="pfIdentity"></div>
+      </article>
+
+      <!-- Connect / external profiles -->
+      <article class="pf-account-card pf-connect-card">
+        <div class="card-eyebrow">— Connect</div>
+        <div class="pf-id-grid" id="pfConnect"></div>
+      </article>
+    </div>
+
+    <div class="pf-account-footer">
+      <span class="dot"></span>
+      <span id="pfRoleBadge">Student</span>
+      <span class="sep">·</span>
+      <span>Joined <em id="pfJoined">—</em></span>
+      <span class="sep">·</span>
+      <span>Signed in as <em id="pfAuthEmail">—</em></span>
+    </div>
+  </section>
+
+</div>
+
+<div class="pf-toast" id="toast"><span class="dot"></span><span id="toastText">Saved</span></div>
+</div>
+
+<div class="pf-toast" id="toast"><span class="dot"></span><span id="toastText">Saved</span></div>
+
+<script type="module" src="./src/profile.js"></script>
+
+</body>
+</html>
