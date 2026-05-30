@@ -41,22 +41,21 @@ jobs:
           VITE_FIREBASE_PROJECT_ID: ci-placeholder
           VITE_FIREBASE_APP_ID: ci-placeholder
 
-      - name: Upload build artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: dist-${{ github.sha }}
-          path: dist
-          retention-days: 7
-
+      # We deliberately do NOT upload the dist/ build: CI builds with
+      # placeholder Firebase env and never deploys, and deploy-prod /
+      # deploy-dev build their own dist — so a CI dist artifact is dead
+      # weight. That upload was the main Actions-storage culprit.
       - name: Coverage
         run: npm run test:coverage
         continue-on-error: true
 
+      # Short retention so coverage artifacts can't accumulate and blow
+      # the Actions storage quota.
       - name: Upload coverage
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: coverage-${{ github.sha }}
           path: coverage
-          retention-days: 7
+          retention-days: 5
           if-no-files-found: ignore
